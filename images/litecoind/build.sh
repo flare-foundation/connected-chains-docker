@@ -1,0 +1,1 @@
+sudo docker buildx build --progress=plain -t flarefoundation/litecoin:0.18.1 .

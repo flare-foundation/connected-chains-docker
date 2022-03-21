@@ -1,0 +1,106 @@
+version: "3"
+
+services:
+  bitcoin:
+    image: flarefoundation/bitcoin:22.0
+    restart: on-failure:3
+    environment:
+      - TZ=Europe/London
+    ports:
+      - ${BIND_IP}:9332:9332
+    volumes:
+      - bitcoin-data:/opt/bitcoin/.bitcoin/db
+      - ./config/bitcoin/bitcoin.conf:/opt/bitcoin/.bitcoin/bitcoin.conf
+  
+  litecoin:
+    image: flarefoundation/litecoin:0.21.1
+    restart: on-failure:3
+    environment:
+      - TZ=Europe/London
+    ports:
+      - ${BIND_IP}:8332:8332
+    volumes:
+      - litecoin-data:/opt/litecoin/.litecoin/db
+      - ./config/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
+
+  dogecoin:
+    image: flarefoundation/dogecoin:1.14.5
+    restart: on-failure:3
+    environment:
+      - TZ=Europe/London
+    ports:
+      - ${BIND_IP}:7332:7332
+    volumes:
+      - dogecoin-data:/opt/dogecoin/.dogecoin/db
+      - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
+
+  rippled:
+    image: flarefoundation/rippled:1.7.2
+    restart: on-failure:3
+    environment:
+      - TZ=Europe/London
+    ports:
+      - ${BIND_IP}:5005:5005   # port_rpc_admin_local
+      - ${BIND_IP}:6006:6006   # port_ws_admin_local
+      - ${BIND_IP}:51235:51235 # port_peer
+      - ${BIND_IP}:51234:51234 # port_rpc_public
+      - ${BIND_IP}:51233:51233 # port_ws_public
+      - ${BIND_IP}:50051:50051 # port_grpc
+    volumes:
+      - ripple-data:/opt/ripple/.ripple/db
+      - ./config/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf
+      - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
+
+  algorand:
+    image: flarefoundation/algorand:3.4.2
+    ports:
+      - ${BIND_IP}:6332:8080
+      - ${BIND_IP}:4160:4160
+      - ${BIND_IP}:9100:9100
+    #environment:
+      #ALGOD_TOKEN: changeitchangeitchangeitchangeitchangeitchangeitchangeitchangeit 
+    volumes:
+      - algorand-data:/opt/algorand/.algorand
+      - ./config/algorand/config.json:/opt/algorand/.algorand/config.json
+      - ./config/algorand/algod.token:/opt/algorand/.algorand/algod.token
+
+  algorand-indexer:
+    image: flarefoundation/algorand-indexer:2.9.0
+    ports:
+      - ${BIND_IP}:8980:8980
+    environment:
+      DB_HOST: algorand-indexer-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: changeit
+      DB_NAME: postgres
+      ALGOD_NET: http://algorand:8080
+      #ALGOD_TOKEN: changeitchangeitchangeitchangeitchangeitchangeitchangeitchangeit
+    depends_on:
+      - algorand
+      - algorand-indexer-db
+    restart: on-failure  
+    volumes:
+      - algorand-indexer-data:/opt/algorand-indexer/.algorand
+      - ./config/algorand/algod.token:/opt/algorand-indexer/.algorand/algod.token
+
+  algorand-indexer-db:
+    image: "postgres:13-alpine"
+    ports:
+      - ${BIND_IP}:5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeit
+      POSTGRES_DB: postgres  
+    volumes:
+      - algorand-indexer-db:/var/lib/postgresql/data
+
+
+volumes:
+  bitcoin-data:
+  litecoin-data:
+  dogecoin-data:
+  ripple-data:
+  algorand-data:
+  algorand-indexer-data:
+  algorand-indexer-db:
