@@ -39,7 +39,7 @@ docker-compose up -d
 
 Single container:
 ```
-docker-compose up bitcoin
+docker-compose up -d bitcoin
 ```
 
 Stop a single container:
@@ -47,7 +47,7 @@ Stop a single container:
 docker-compose stop bitcoin
 ```
 
-You can check the bootstrap process with the `hc.sh` script. `hc <your-provided-password>`
+You can check the bootstrap process with the `hc.sh` script. `./hc <your-provided-password>`
 
 # Logs
 
