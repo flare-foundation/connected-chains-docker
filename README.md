@@ -20,7 +20,7 @@ The following specifications were observed to be able to run all nodes on a sing
 - RAM: 64GB
 - Disk space: 3TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks.
 
-Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin and rippled, more than a day for bitcoin and weeks for algorand.
+Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin and xrpl, more than a day for bitcoin and weeks for algorand.
 
 # Installation
 ```
