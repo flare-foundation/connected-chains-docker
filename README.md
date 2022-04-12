@@ -32,6 +32,9 @@ cd /opt/connected-chains
 ./install.sh <your-provided-password>
 ```
 
+
+`<your-provided-password>` should be at least 64 characters long.
+
 # Running
 
 All containers:
