@@ -23,6 +23,9 @@ The following specifications were observed to be able to run all nodes on a sing
 Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin and xrpl, more than a day for bitcoin and weeks for algorand.
 
 # Installation
+
+The provided `install.sh` was written for Ubuntu 20.04, adapt the script if you are running a different operating system.
+
 ```
 git clone https://github.com/flare-foundation/connected-chains-docker /opt/connected-chains
 cd /opt/connected-chains
