@@ -1,1 +1,1 @@
-sudo docker buildx build --progress=plain -t flarefoundation/bitcoin:22.0 .
+sudo docker buildx build --progress=plain -t flarefoundation/bitcoin:23.0 .
