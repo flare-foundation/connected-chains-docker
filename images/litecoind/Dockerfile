@@ -7,6 +7,9 @@ ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 RUN <<-EOF
     apt-get -y update && \
+    apt-get -y install software-properties-common && \
+    add-apt-repository universe && \
+    apt-get -y update && \
     apt-get -y install \
     git \
     build-essential \
@@ -25,7 +28,8 @@ RUN <<-EOF
     libboost-thread-dev \
     libssl-dev \
     libuv1-dev \
-    acl
+    acl \
+    libfmt-dev
 EOF
 
 RUN <<-EOF
