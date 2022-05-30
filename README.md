@@ -17,7 +17,7 @@ The following specifications were observed to be able to run all nodes on a sing
 
 - OS: Ubuntu 20.04
 - CPU Cores: 16
-- RAM: 64GB
+- RAM: 96GB
 - Disk space: 3TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks.
 
 Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin and xrpl, more than a day for bitcoin and weeks for algorand.
