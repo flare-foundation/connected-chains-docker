@@ -40,6 +40,8 @@ We are looking into ways to run a non-full history algorand node.
 
 The provided `install.sh` was written for Ubuntu 20.04, adapt the script if you are running a different operating system.
 
+User needs access to write in `/opt`. You can also run as sudo or root or clone to some other directory of your choice.
+
 ```
 git clone https://github.com/flare-foundation/connected-chains-docker /opt/connected-chains
 cd /opt/connected-chains
