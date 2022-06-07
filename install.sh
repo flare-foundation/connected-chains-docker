@@ -28,6 +28,13 @@ if [[ $? -ne 0 ]]; then
     sudo apt-get -y install openssl
 fi
 
+# jq
+jq --version
+if [[ $? -ne 0 ]]; then
+    echo "Installing jq"
+    sudo apt-get -y install jq
+fi
+
 # rpcauth
 PASS="${1:-}"
 

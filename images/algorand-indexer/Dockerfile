@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04
 
-ARG INDEXER_VERSION=2.10.0
+ARG INDEXER_VERSION=2.11.1
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 

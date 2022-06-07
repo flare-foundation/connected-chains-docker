@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04 as build
 
-ARG ALGORAND_VERSION=v3.5.1-stable
-ARG GO_VERSION=1.14.15
+ARG ALGORAND_VERSION=v3.6.2-stable
+ARG GO_VERSION=1.16.15
 
 WORKDIR /opt/algorand
 ENV PATH=/usr/local/go/bin:$PATH
