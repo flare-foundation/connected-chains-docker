@@ -1,0 +1,1 @@
+sudo docker buildx build --progress=plain --build-arg SOURCE_ZIP=litecoin-0.18-flare.zip --build-arg SOURCE_FOLDER=litecoin-0.18-flare -t flarefoundation/litecoin:0.18.1-wls .
