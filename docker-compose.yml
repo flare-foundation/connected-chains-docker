@@ -64,43 +64,9 @@ services:
       - ./config/algorand/config.json:/opt/algorand/.algorand/config.json
       - ./config/algorand/algod.token:/opt/algorand/.algorand/algod.token
 
-  algorand-indexer:
-    image: flarefoundation/algorand-indexer:2.11.1
-    ports:
-      - ${BIND_IP}:8980:8980
-    environment:
-      DB_HOST: algorand-indexer-db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: changeit
-      DB_NAME: postgres
-      ALGOD_NET: http://algorand:8080
-      #ALGOD_TOKEN: changeitchangeitchangeitchangeitchangeitchangeitchangeitchangeit
-    depends_on:
-      - algorand
-      - algorand-indexer-db
-    restart: on-failure  
-    volumes:
-      - algorand-indexer-data:/opt/algorand-indexer/.algorand
-      - ./config/algorand/algod.token:/opt/algorand-indexer/.algorand/algod.token
-
-  algorand-indexer-db:
-    image: "postgres:13-alpine"
-    ports:
-      - ${BIND_IP}:5433:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: changeit
-      POSTGRES_DB: postgres  
-    volumes:
-      - algorand-indexer-db:/var/lib/postgresql/data
-
-
 volumes:
   bitcoin-data:
   litecoin-data:
   dogecoin-data:
   ripple-data:
   algorand-data:
-  algorand-indexer-data:
-  algorand-indexer-db:

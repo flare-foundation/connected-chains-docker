@@ -17,6 +17,3 @@ curl -X POST -m 10 -H "Content-type: application/json" -d '{"method": "server_in
 
 echo "====================== ALGORAND ======================"
 curl -X GET -m 10 http://$HOST:6332/v1/status -H "X-Algo-API-Token: $PASS" |jq
-
-echo "====================== ALGORAND INDEXER ======================"
-curl -X GET -m 10 http://$HOST:8980/health -H "X-Algo-API-Token: $PASS" |jq
