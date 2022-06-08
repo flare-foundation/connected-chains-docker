@@ -53,7 +53,8 @@ ARG GROUP_ID=10200
 RUN groupadd -g ${GROUP_ID} algo && useradd -u ${USER_ID} -g algo -d /opt/algorand algo
 
 COPY --from=build /tmp/go-linux-amd64.tar.gz /tmp
-COPY --from=build /opt/algorand/ /opt/algorand/
+COPY --from=build /opt/algorand/go/ /opt/algorand/go/
+COPY --from=build /opt/algorand/algorand-defaults/ /opt/algorand/algorand-defaults/
 
 RUN <<-EOF
     apt-get -y update && \
@@ -69,8 +70,6 @@ COPY default-config/ /opt/algorand/default-config/
 
 RUN <<-EOF
     mkdir -p /opt/algorand/.algorand && \
-    cp /opt/algorand/algorand-defaults/genesis.json /opt/algorand/.algorand/ && \
-    cp /opt/algorand/default-config/config.json /opt/algorand/.algorand/ && \
     chown -R algo:algo /opt/algorand && \
     touch /opt/algorand/.algorand/algod.token 
 EOF
