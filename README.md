@@ -18,23 +18,20 @@ The following specifications were observed to be able to run all nodes on a sing
 - OS: Ubuntu 20.04
 - CPU Cores: 16
 - RAM: 96GB
-- Disk space: 3TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks.
+- Disk space: 2TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks.
 
-Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin and xrpl, more than a day for bitcoin and weeks for algorand.
+Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin, algorand and xrpl, more than a day for bitcoin.
 
 
 As of Q2 2022, this is roughly what you can expect from each node regarding disk usage:
 
 | Volume      | Size |
 | ----------- | ----------- |
-| algorand-data                    | 1TB |
-| algorand-indexer-db              | 1TB |
+| algorand-data                    | 100GB |
 | bitcoin-data                     | 500GB |
 | dogecoin-data                    | 60GB |
 | litecoin-data                    | 90GB |
 | ripple-data                      | 230GB |
-
-We are looking into ways to run a non-full history algorand node.
 
 # Installation
 
