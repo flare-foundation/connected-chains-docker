@@ -109,6 +109,11 @@ followed by `sudo systemctl restart docker`.
 
 Alternatively, if you do not wish to change data directory for your docker daemon you can switch to bind volume mounts or volume mounts with nfs driver in the compose file.
 
+# Algorand fast sync
+Algorand node supports syncing just the latest blocks in the blockchain, but it downloads full history by default. This can take up to 14 days.
+If you don't want to download the whole blockchain, you can run the script `algorand-catchup.sh` after the node has started bootstrapping.
+This will use Algorand fast catchup feature to automatically catchup to the latest catchpoint. After starting the catchup, the node should finish bootstrapping in few hours.
+
 # Building your own images
 
 All Dockerfile definitions are in `images` folder. Images use Moby BuildKit extensions.
