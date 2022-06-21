@@ -7,10 +7,10 @@ echo "====================== BITCOIND ======================"
 curl -X POST -m 10 -H "Content-type: application/json" -d '{"jsonrpc": "1.0", "id":"hc", "method": "getblockchaininfo", "params":[]}' http://admin:$PASS@$HOST:9332 |jq
 
 echo "====================== LITECOIND ======================"
-curl -X POST -m 10 -H "Content-type: application/json" -d '{"jsonrpc": "1.0", "id":"hc", "method": "getblockchaininfo", "params":[]}' http://admin:$PASS@$HOST:7332 |jq
+curl -X POST -m 10 -H "Content-type: application/json" -d '{"jsonrpc": "1.0", "id":"hc", "method": "getblockchaininfo", "params":[]}' http://admin:$PASS@$HOST:8332 |jq
 
 echo "====================== DOGECOIND ======================"
-curl -X POST -m 10 -H "Content-type: application/json" -d '{"jsonrpc": "1.0", "id":"hc", "method": "getblockchaininfo", "params":[]}' http://admin:$PASS@$HOST:8332 |jq
+curl -X POST -m 10 -H "Content-type: application/json" -d '{"jsonrpc": "1.0", "id":"hc", "method": "getblockchaininfo", "params":[]}' http://admin:$PASS@$HOST:7332 |jq
 
 echo "====================== RIPPLED ======================"
 curl -X POST -m 10 -H "Content-type: application/json" -d '{"method": "server_info", "params":[{"api_version": 1}]}' http://$HOST:51234 |jq
