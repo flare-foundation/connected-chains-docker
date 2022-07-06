@@ -30,7 +30,8 @@ RUN <<-EOF
     libssl-dev \
     libuv1-dev \
     acl \
-    libfmt-dev
+    libfmt-dev \
+    unzip
 EOF
 
 RUN <<-EOF

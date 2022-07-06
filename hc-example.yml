@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  dogecoind:
+    image: flarefoundation/dogecoin:1.14.5
+    restart: on-failure:3
+    environment:
+      - TZ=Europe/London
+    ports:
+      - 7332:7332
+    volumes:
+      - dogecoin-data:/opt/dogecoin/.dogecoin/db
+      - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
+  
+  dogecoind_hc_sidecar:
+    image: flarefoundation/k8s_hc_sidecar:0.1.1
+    restart: on-failure:3
+    environment:
+      - RPC_PASS=123456
+      - HOST=dogecoind
+      - PORT=7332
+    ports:
+      - 11111:11111
+    volumes:
+      - ./config/k8s_hc_sidecar/entrypoint.sh:/opt/entrypoint.sh
+
+
+volumes:
+  dogecoin-data:      
