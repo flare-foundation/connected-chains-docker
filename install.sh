@@ -37,8 +37,15 @@ fi
 
 # rpcauth
 PASS="${1:-}"
+NETWORK="${2:-mainnet}"
 
-cd ./config/bitcoin
+CONFIG_DIR="config"
+
+if [[ "$NETWORK" = "testnet" ]]; then
+    CONFIG_DIR="config-testnet"
+fi
+
+cd "./${CONFIG_DIR}/bitcoin"
 ./rpcauth.py admin $PASS
 
 cd ../litecoin
