@@ -18,7 +18,7 @@ ALGOD_ADMIN_TOKEN=$(docker exec ${ALGOD_CONTAINER} cat /opt/algorand/.algorand/a
 LAST_ROUND=$(curl -s -H "X-Algo-API-Token: ${ALGOD_ADMIN_TOKEN}" "${ALGOD_URL}/v2/status" | jq -r '.["last-round"]')
 CURRENT_CATCHPOINT=$(curl -s -H "X-Algo-API-Token: ${ALGOD_ADMIN_TOKEN}" "${ALGOD_URL}/v2/status" | jq -r '.catchpoint')
 
-ALGOD_NETWORK=$(docker exec ${ALGOD_CONTAINER} printenv ALGOD_NETWORK)
+ALGOD_NETWORK=$(docker exec ${ALGOD_CONTAINER} printenv ALGOD_NETWORK) || true
 
 if [ -z "${ALGOD_NETWORK}" ]; then
 	ALGOD_NETWORK="mainnet"

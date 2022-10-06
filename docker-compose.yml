@@ -52,7 +52,7 @@ services:
       - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
   algorand:
-    image: flarefoundation/algorand:3.6.2
+    image: flarefoundation/algorand:3.9.4
     ports:
       - ${BIND_IP}:6332:8080
       - ${BIND_IP}:4160:4160

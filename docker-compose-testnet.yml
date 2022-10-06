@@ -55,7 +55,7 @@ services:
       - ./config-testnet/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
   algorand:
-    image: flarefoundation/algorand:3.6.2-dev
+    image: flarefoundation/algorand:3.9.4
     ports:
       - ${BIND_IP}:18080:8080
       - ${BIND_IP}:4161:4161

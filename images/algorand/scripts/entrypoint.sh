@@ -6,7 +6,11 @@ if [ ! -z "${ALGOD_TOKEN}" ]; then
 fi
 
 if [[ ! -f /opt/algorand/.algorand/genesis.json ]]; then
-	cp /opt/algorand/algorand-defaults/genesis.json /opt/algorand/.algorand/
+	if [ -z "${ALGOD_NETWORK}" ]; then
+		cp /opt/algorand/algorand-defaults/genesis-mainnet.json /opt/algorand/.algorand/genesis.json
+	else
+		cp /opt/algorand/algorand-defaults/genesis-${ALGOD_NETWORK}.json /opt/algorand/.algorand/genesis.json
+	fi
 	if [[ ! -f /opt/algorand/.algorand/config.json ]]; then
 		cp /opt/algorand/default-config/config.json /opt/algorand/.algorand/
 	fi

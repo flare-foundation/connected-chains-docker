@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04 as build
 
-ARG ALGORAND_VERSION=v3.8.1-stable
+ARG ALGORAND_VERSION=v3.9.4-stable
 ARG GO_VERSION=1.17.13
 
 WORKDIR /opt/algorand
@@ -36,7 +36,10 @@ RUN <<-EOF
     make build && \
     ./scripts/local_install.sh -c stable -p ${GOPATH}/bin -d /opt/algorand/algorand-defaults -f -s && \
     rm /opt/algorand/algorand-defaults/genesis.json && \
-    cp installer/genesis/mainnet/genesis.json /opt/algorand/algorand-defaults/
+    cp installer/genesis/mainnet/genesis.json /opt/algorand/algorand-defaults/genesis-mainnet.json && \
+    cp installer/genesis/betanet/genesis.json /opt/algorand/algorand-defaults/genesis-betanet.json && \
+    cp installer/genesis/devnet/genesis.json /opt/algorand/algorand-defaults/genesis-devnet.json && \
+    cp installer/genesis/testnet/genesis.json /opt/algorand/algorand-defaults/genesis-testnet.json
 EOF
 
 FROM ubuntu:20.04
