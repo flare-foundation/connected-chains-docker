@@ -2,7 +2,7 @@ version: "3"
 
 services:
   bitcoin:
-    image: flarefoundation/bitcoin:22.0
+    image: flarefoundation/bitcoin:23.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London
