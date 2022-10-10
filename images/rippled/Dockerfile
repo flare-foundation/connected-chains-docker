@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04 as build
 
-ARG VERSION=1.9.2
+ARG VERSION=1.9.4
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -47,6 +47,8 @@ RUN <<-EOF
     chmod 755 /opt/ripple/.ripple/db
 EOF
 
+RUN rm -rf .git src .nih_c cmake_build
+
 COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
 COPY ./validators.txt /opt/ripple/.ripple/validators.txt
 
@@ -65,9 +67,6 @@ curl \
 jq \
 netcat
 EOF
-
-RUN ls -la /opt/ripple/cmake_build
-RUN ls -la /opt/ripple/bin
 
 # https://xrpl.org/commandline-usage.html
 ENTRYPOINT ["rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]

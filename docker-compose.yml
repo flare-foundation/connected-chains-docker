@@ -2,7 +2,7 @@ version: "3"
 
 services:
   bitcoin:
-    image: flarefoundation/bitcoin:22.0
+    image: flarefoundation/bitcoin:23.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -24,7 +24,7 @@ services:
       - ./config/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
   dogecoin:
-    image: flarefoundation/dogecoin:1.14.5
+    image: flarefoundation/dogecoin:1.14.6
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -35,7 +35,7 @@ services:
       - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
   rippled:
-    image: flarefoundation/rippled:1.9.0
+    image: flarefoundation/rippled:1.9.4
     restart: on-failure:3
     environment:
       - TZ=Europe/London

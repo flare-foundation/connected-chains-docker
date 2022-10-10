@@ -1,1 +1,1 @@
-sudo docker buildx build --progress=plain -t flarefoundation/rippled:1.9.2 .
+sudo docker buildx build --progress=plain -t flarefoundation/rippled:1.9.4 .
