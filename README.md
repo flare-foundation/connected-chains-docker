@@ -48,6 +48,8 @@ cd /opt/connected-chains
 
 `<your-provided-password>` should be at least 64 characters long.
 
+To generate passwords for testnets, run with `testnet` as second parameter: `./install.sh <your-provided-password> testnet`
+
 # Running
 
 All containers:
@@ -84,6 +86,28 @@ Data for each node is stored in a docker volume. To find the exact mount point o
 docker volume ls
 sudo docker inspect <volume-name> | grep Mountpoint
 ```
+
+# Running testnets
+
+All containers:
+```
+cd /opt/connected-chains
+docker-compose -f docker-compose-testnet.yml up -d
+```
+
+Single container:
+```
+docker-compose -f docker-compose-testnet.yml up -d bitcoin
+```
+
+Stop a single container:
+```
+docker-compose -f docker-compose-testnet.yml stop bitcoin
+```
+
+You can check the bootstrap process with the `hc-testnet.sh` script. `./hc <your-provided-password>`
+
+Configs are loaded from `config-testnet` directory.
 
 # Security considerations
 Installation script will create a username and password for nodes and insert a line into each config file.
