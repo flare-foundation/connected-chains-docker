@@ -38,9 +38,9 @@ hexseq = list(map(hex, salt_sequence))
 salt = "".join([x[2:] for x in hexseq])
 
 password = "admin"
-if not sys.argv[2]:
+if len(sys.argv)<3:
     #Create 32 byte b64 password
-    password = base64.urlsafe_b64encode(os.urandom(32))
+    password = str(base64.urlsafe_b64encode(os.urandom(32)), 'utf-8')
 else:
     password = sys.argv[2]
 
