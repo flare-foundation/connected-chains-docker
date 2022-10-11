@@ -36,8 +36,9 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # rpcauth
-PASS="${1:-}"
-NETWORK="${2:-mainnet}"
+NETWORK="${1:-mainnet}"
+PASS="${2:-}"
+
 
 CONFIG_DIR="config"
 

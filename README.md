@@ -42,13 +42,13 @@ User needs access to write in `/opt`. You can also run as sudo or root or clone 
 ```
 git clone https://github.com/flare-foundation/connected-chains-docker /opt/connected-chains
 cd /opt/connected-chains
-./install.sh <your-provided-password>
+./install.sh mainnet <your-provided-password>
 ```
 
 
 `<your-provided-password>` should be at least 64 characters long.
 
-To generate passwords for testnets, run with `testnet` as second parameter: `./install.sh <your-provided-password> testnet`
+To generate passwords for testnets, run with `testnet` as first parameter: `./install.sh testnet <your-provided-password>`
 
 # Running
 
