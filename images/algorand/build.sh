@@ -1,1 +1,1 @@
-docker buildx build --progress=plain -t flarefoundation/algorand:3.9.4 .
+sudo docker buildx build --progress=plain -t flarefoundation/algorand:3.10.0 .

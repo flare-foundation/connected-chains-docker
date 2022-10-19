@@ -26,7 +26,7 @@ services:
       - ./config-testnet/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
   dogecoin:
-    image: flarefoundation/dogecoin:1.14.5
+    image: flarefoundation/dogecoin:1.14.6
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -55,7 +55,7 @@ services:
       - ./config-testnet/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
   algorand:
-    image: flarefoundation/algorand:3.9.4
+    image: flarefoundation/algorand:3.10.0
     ports:
       - ${BIND_IP}:18080:8080
       - ${BIND_IP}:4161:4161
