@@ -13,7 +13,7 @@ services:
       - ./config/bitcoin/bitcoin.conf:/opt/bitcoin/.bitcoin/bitcoin.conf
   
   litecoin:
-    image: flarefoundation/litecoin:0.18.1
+    image: flarefoundation/litecoin:0.21.2.1
     restart: on-failure:3
     environment:
       - TZ=Europe/London

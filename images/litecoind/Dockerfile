@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04 as build
 
-ARG VERSION=v0.18.1
+ARG VERSION=v0.21.2.1
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
+# Remove libdb++-dev after upstream fixes the problem with --disable-wallet requiring it
 RUN <<-EOF
     apt-get -y update && \
     apt-get -y install software-properties-common && \
@@ -29,7 +30,8 @@ RUN <<-EOF
     libssl-dev \
     libuv1-dev \
     acl \
-    libfmt-dev
+    libfmt-dev \
+    libdb++-dev
 EOF
 
 RUN <<-EOF
