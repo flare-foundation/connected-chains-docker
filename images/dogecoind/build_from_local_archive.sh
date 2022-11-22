@@ -1,1 +1,1 @@
-sudo docker buildx build --build-arg SOURCE_ZIP=dogecoin-1.14.5-flare-dev.zip --build-arg SOURCE_FOLDER=dogecoin-1.14.5-flare-dev --progress=plain -f Dockerfile-wls -t flarefoundation/dogecoin:1.14.5-wls .
+sudo docker buildx build --build-arg SOURCE_ZIP=dogecoin-1.14.6-flare.zip --build-arg SOURCE_FOLDER=dogecoin-1.14.6-flare --progress=plain -f Dockerfile-wls -t flarefoundation/dogecoin:1.14.6-wls .
