@@ -53,12 +53,21 @@ def main():
     print('password = {0}'.format(args.password))
     print('Your password:\n{0}'.format(args.password))
 
-    confWrite = open(confPath, 'a+')
-    confWrite.write('\n#credentials')
-    confWrite.write('\nuser={0}'.format(args.username))
-    confWrite.write('\npassword={0}'.format(args.password))
-    confWrite.write('\n')
-    confWrite.close()
+    # Insert after [port_rpc_admin_local] and [port_ws_admin_local]
+    with open(confPath, "r") as f:
+        contents = f.readlines()
+
+    indexRpc = contents.index('[port_rpc_admin_local]\n') + 1 
+    contents.insert(indexRpc, 'user={0}'.format(args.username)+"\n")
+    contents.insert(indexRpc, 'password={0}'.format(args.password)+"\n")
+
+    indexWs = contents.index('[port_ws_admin_local]\n') + 1
+    contents.insert(indexWs, 'user={0}'.format(args.username)+"\n")
+    contents.insert(indexWs, 'password={0}'.format(args.password)+"\n")
+
+    with open(confPath, "w") as f:
+        contents = "".join(contents)
+        f.write(contents)
 
 if __name__ == '__main__':
     main()
