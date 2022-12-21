@@ -1,0 +1,23 @@
+############################################################
+##
+## Read up on parameters on
+## https://docs.prylabs.network/docs/prysm-usage/parameters/
+##
+############################################################
+
+ropsten: true
+accept-terms-of-use: true
+datadir: /opt/ethereumd/data
+
+#######################
+# Connectivity settings 
+rpc-host: 0.0.0.0
+grpc-gateway-host: 0.0.0.0
+grpc-gateway-port: 3500
+eth-api-port: 3501
+
+jwt-secret: /opt/ethereumd/data/jwt.hex
+
+##############################
+# Connection to geth container
+execution-endpoint: http://geth:8551
