@@ -2,7 +2,7 @@ version: "3"
 
 services:
   bitcoin:
-    image: flarefoundation/bitcoin:23.0
+    image: flarefoundation/bitcoin:24.0.1
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -52,7 +52,7 @@ services:
       - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
   algorand:
-    image: flarefoundation/algorand:3.11.3
+    image: flarefoundation/algorand:3.14.2
     ports:
       - ${BIND_IP}:6332:8080
       - ${BIND_IP}:4160:4160
