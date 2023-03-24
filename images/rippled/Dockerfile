@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:20.04 as build
+FROM ubuntu:22.04 as build
 
-ARG VERSION=1.9.4
+ARG VERSION=1.10.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -19,8 +19,11 @@ flex \
 bison \
 libssl-dev \
 libboost-all-dev \
-pkg-config
+pkg-config \
+python3-pip
 EOF
+
+RUN yes | pip3 install conan==1.59.0
 
 RUN <<-EOF
     echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
@@ -37,12 +40,19 @@ WORKDIR /opt/ripple
 
 RUN <<-EOF
     git config --global http.postBuffer 1048576000 && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/ripple/build -Dstatic=OFF -B./cmake_build
+    conan profile new default --detect && \
+    conan profile update settings.compiler.cppstd=20 default && \
+    conan export external/snappy snappy/1.1.9@ && \
+    mkdir cmake_build && \
+    cd cmake_build && \
+    conan install .. --output-folder . --build missing --settings build_type=Release && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_INSTALL_PREFIX=/opt/ripple/build -Dstatic=OFF -B./ ..
 EOF
 
 RUN <<-EOF
     cd cmake_build && \
     cmake --build . --target install -- -j 1 && \
+    ./rippled --unittest && \
     mkdir -p /opt/ripple/.ripple/db && \
     chmod 755 /opt/ripple/.ripple/db
 EOF
@@ -52,7 +62,7 @@ RUN rm -rf .git src .nih_c cmake_build
 COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
 COPY ./validators.txt /opt/ripple/.ripple/validators.txt
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 COPY --from=build /opt/ripple/ /opt/ripple/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
