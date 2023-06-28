@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=1.10.0
+ARG VERSION=1.11.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 

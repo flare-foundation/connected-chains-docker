@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04 as build
 
-ARG ALGORAND_VERSION=v3.14.2-stable
+ARG ALGORAND_VERSION=v3.16.3-stable
 ARG GO_VERSION=1.17.13
 
 WORKDIR /opt/algorand

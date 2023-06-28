@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:20.04 as build
 
-ARG VERSION=v24.0.1
+ARG VERSION=v25.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -54,7 +54,7 @@ EOF
 COPY ./bitcoin.conf /opt/bitcoin/.bitcoin/bitcoin.conf
 
 FROM ubuntu:20.04
-COPY --from=build /opt/bitcoin/ /opt/bitcoin/
+COPY --from=build /opt/bitcoin/build /opt/bitcoin/build
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 ENV PATH="/opt/bitcoin/build/bin:${PATH}"
