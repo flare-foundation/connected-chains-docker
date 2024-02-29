@@ -1,1 +1,1 @@
-docker buildx build --progress=plain -t flarefoundation/rippled:1.12.0 .
+docker build -t flarefoundation/rippled:2.1.0 .

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=1.12.0
+ARG VERSION=2.1.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -42,7 +42,7 @@ RUN <<-EOF
     git config --global http.postBuffer 1048576000 && \
     conan profile new default --detect && \
     conan profile update settings.compiler.cppstd=20 default && \
-    conan export external/snappy snappy/1.1.9@ && \
+    conan export external/snappy snappy/1.1.10@ && \
     mkdir cmake_build && \
     cd cmake_build && \
     conan install .. --output-folder . --build missing --settings build_type=Release && \

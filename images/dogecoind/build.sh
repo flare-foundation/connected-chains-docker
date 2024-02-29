@@ -1,1 +1,1 @@
-docker buildx build --progress=plain -t flarefoundation/dogecoin:1.14.6 .
+docker build --progress=plain -t flarefoundation/dogecoin:1.14.7 .
