@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-ALGOD_CONTAINER=$(docker-compose ps -q algorand)
+ALGOD_CONTAINER=$(docker compose ps -q algorand)
 
 ALGOD_PORT=$(docker port ${ALGOD_CONTAINER} 8080/tcp | grep "\." | cut -d ":" -f 2)
 ALGOD_URL="http://127.0.0.1:${ALGOD_PORT}"

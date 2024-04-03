@@ -2,7 +2,7 @@ version: "3"
 
 services:
   bitcoin:
-    image: flarefoundation/bitcoin:24.0.1
+    image: flarefoundation/bitcoin:26.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -26,7 +26,7 @@ services:
       - ./config-testnet/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
   dogecoin:
-    image: flarefoundation/dogecoin:1.14.6
+    image: flarefoundation/dogecoin:1.14.7
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -38,7 +38,7 @@ services:
       - ./config-testnet/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
   rippled:
-    image: flarefoundation/rippled:1.9.4
+    image: flarefoundation/rippled:2.1.1
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -55,7 +55,7 @@ services:
       - ./config-testnet/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
   algorand:
-    image: flarefoundation/algorand:3.14.2
+    image: flarefoundation/algorand:3.23.1
     ports:
       - ${BIND_IP}:18080:8080
       - ${BIND_IP}:4161:4161

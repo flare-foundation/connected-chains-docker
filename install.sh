@@ -13,14 +13,6 @@ if [ $? -ne 0 ]; then
     sudo apt-get -y install docker-ce docker-ce-cli containerd.io
 fi    
 
-# compose
-docker-compose --version
-if [ $? -ne 0 ]; then
-    echo "Installing docker-compose"
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-fi
-
 # openssl
 openssl version
 if [[ $? -ne 0 ]]; then
@@ -38,7 +30,6 @@ fi
 # rpcauth
 NETWORK="${1:-mainnet}"
 PASS="${2:-}"
-
 
 CONFIG_DIR="config"
 

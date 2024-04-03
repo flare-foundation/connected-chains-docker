@@ -15,27 +15,27 @@ You can use this repo to get you started but we encourage the community to confi
 
 The following specifications were observed to be able to run all nodes on a single machine. You probably want to run one node per system in production for better performance and uptime.
 
-- OS: Ubuntu 20.04
+- OS: Ubuntu 22.04
 - CPU Cores: 16
 - RAM: 96GB
-- Disk space: 2TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks.
+- Disk space: 3TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks. Xrpl also does not work on network attached cloud storage, a locally attached disk is required.
 
 Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin, algorand and xrpl, more than a day for bitcoin.
 
 
-As of Q2 2022, this is roughly what you can expect from each node regarding disk usage:
+As of Q1 2024, this is roughly what you can expect from each node regarding disk usage:
 
 | Volume      | Size |
 | ----------- | ----------- |
-| algorand-data                    | 100GB |
-| bitcoin-data                     | 500GB |
-| dogecoin-data                    | 60GB |
-| litecoin-data                    | 90GB |
-| ripple-data                      | 230GB |
+| algorand-data                    | 200GB |
+| bitcoin-data                     | 1000GB |
+| dogecoin-data                    | 200GB |
+| litecoin-data                    | 200GB |
+| ripple-data                      | 370GB |
 
 # Installation
 
-The provided `install.sh` was written for Ubuntu 20.04, adapt the script if you are running a different operating system.
+The provided `install.sh` was written for Ubuntu 22.04, adapt the script if you are running a different operating system.
 
 User needs access to write in `/opt`. You can also run as sudo or root or clone to some other directory of your choice.
 
@@ -55,17 +55,17 @@ To generate passwords for testnets, run with `testnet` as first parameter: `./in
 All containers:
 ```
 cd /opt/connected-chains
-docker-compose up -d
+docker compose up -d
 ```
 
 Single container:
 ```
-docker-compose up -d bitcoin
+docker compose up -d bitcoin
 ```
 
 Stop a single container:
 ```
-docker-compose stop bitcoin
+docker compose stop bitcoin
 ```
 
 You can check the bootstrap process with the `hc.sh` script. `./hc <your-provided-password>`
@@ -73,7 +73,7 @@ You can check the bootstrap process with the `hc.sh` script. `./hc <your-provide
 # Logs
 
 ```
-docker-compose logs -f --tail=1000 bitcoin
+docker compose logs -f --tail=1000 bitcoin
 ```
 
 # Node configuration
@@ -92,20 +92,20 @@ sudo docker inspect <volume-name> | grep Mountpoint
 All containers:
 ```
 cd /opt/connected-chains
-docker-compose -f docker-compose-testnet.yml up -d
+docker compose -f docker-compose-testnet.yml up -d
 ```
 
 Single container:
 ```
-docker-compose -f docker-compose-testnet.yml up -d bitcoin
+docker compose -f docker-compose-testnet.yml up -d bitcoin
 ```
 
 Stop a single container:
 ```
-docker-compose -f docker-compose-testnet.yml stop bitcoin
+docker compose -f docker-compose-testnet.yml stop bitcoin
 ```
 
-You can check the bootstrap process with the `hc-testnet.sh` script. `./hc <your-provided-password>`
+You can check the bootstrap process with the `hc-testnet.sh` script. `./hc-testnet <your-provided-password>`
 
 Configs are loaded from `config-testnet` directory.
 
