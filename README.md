@@ -29,9 +29,9 @@ As of Q1 2024, this is roughly what you can expect from each node regarding disk
 | ----------- | ----------- |
 | algorand-data                    | 200GB |
 | bitcoin-data                     | 1000GB |
-| dogecoin-data                    | 200GB |
-| litecoin-data                    | 200GB |
-| ripple-data                      | 370GB |
+| dogecoin-data                    | 350GB |
+| litecoin-data                    | 300GB |
+| ripple-data                      | 400GB |
 
 # Installation
 

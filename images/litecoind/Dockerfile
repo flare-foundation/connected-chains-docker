@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:20.04 as build
+FROM ubuntu:22.04 as build
 
-ARG VERSION=v0.21.2.1
+ARG VERSION=v0.21.3
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -61,7 +61,7 @@ EOF
 
 COPY ./litecoin.conf /opt/litecoin/.litecoin/litecoin.conf
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 COPY --from=build /opt/litecoin/ /opt/litecoin/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
@@ -76,6 +76,7 @@ RUN <<-EOF
     libboost-chrono-dev \
     libboost-test-dev \
     libboost-thread-dev \
+    libfmt-dev \
     net-tools \
     curl \
     jq \

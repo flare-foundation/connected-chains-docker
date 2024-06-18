@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=2.1.1
+ARG VERSION=2.2.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -51,7 +51,7 @@ EOF
 
 RUN <<-EOF
     cd cmake_build && \
-    cmake --build . --target install -- -j 1 && \
+    cmake --build . --target install -- -j 8 && \
     ./rippled --unittest && \
     mkdir -p /opt/ripple/.ripple/db && \
     chmod 755 /opt/ripple/.ripple/db
