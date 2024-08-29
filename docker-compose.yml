@@ -24,7 +24,7 @@ services:
       - ./config/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
   dogecoin:
-    image: flarefoundation/dogecoin:1.14.7
+    image: flarefoundation/dogecoin:1.14.8
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -35,7 +35,7 @@ services:
       - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
   rippled:
-    image: flarefoundation/rippled:2.2.0
+    image: flarefoundation/rippled:2.2.1
     restart: on-failure:3
     environment:
       - TZ=Europe/London

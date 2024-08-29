@@ -2,7 +2,7 @@ version: "3"
 
 services:
   dogecoind:
-    image: flarefoundation/dogecoin:1.14.7
+    image: flarefoundation/dogecoin:1.14.8
     restart: on-failure:3
     environment:
       - TZ=Europe/London
