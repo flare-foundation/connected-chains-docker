@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=2.2.1
+ARG VERSION=2.2.3
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -23,7 +23,7 @@ pkg-config \
 python3-pip
 EOF
 
-RUN yes | pip3 install conan==1.61.0
+RUN yes | pip3 install conan==1.65.0
 
 RUN <<-EOF
     echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
