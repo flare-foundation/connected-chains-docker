@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=v27.1
+ARG VERSION=v28.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -23,6 +23,7 @@ RUN <<-EOF
     libboost-chrono-dev \
     libboost-test-dev \
     libboost-thread-dev \
+    libzmq3-dev \
     acl
 EOF
 
@@ -43,7 +44,7 @@ WORKDIR /opt/bitcoin
 
 RUN <<-EOF
     bash ./autogen.sh && \
-    bash ./configure --enable-hardening --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/bitcoin/build && \
+    bash ./configure --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/bitcoin/build && \
     echo $(getconf _NPROCESSORS_ONLN) && \
     make -j $(getconf _NPROCESSORS_ONLN) && \
     make install && \
@@ -68,6 +69,7 @@ RUN <<-EOF
     libboost-chrono-dev \
     libboost-test-dev \
     libboost-thread-dev \
+    libzmq3-dev \
     net-tools \
     curl \
     jq \
