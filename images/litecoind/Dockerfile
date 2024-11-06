@@ -29,6 +29,7 @@ RUN <<-EOF
     libboost-thread-dev \
     libssl-dev \
     libuv1-dev \
+    libzmq3-dev \
     acl \
     libfmt-dev \
     libdb++-dev
@@ -51,7 +52,7 @@ WORKDIR /opt/litecoin
 
 RUN <<-EOF
     bash ./autogen.sh && \
-    bash ./configure --enable-hardening --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/litecoin/build && \
+    bash ./configure --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/litecoin/build && \
     echo $(getconf _NPROCESSORS_ONLN) && \
     make -j $(getconf _NPROCESSORS_ONLN) && \
     make install && \
@@ -76,6 +77,7 @@ RUN <<-EOF
     libboost-chrono-dev \
     libboost-test-dev \
     libboost-thread-dev \
+    libzmq3-dev \
     libfmt-dev \
     net-tools \
     curl \

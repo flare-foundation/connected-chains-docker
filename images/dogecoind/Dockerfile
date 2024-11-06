@@ -25,6 +25,7 @@ RUN <<-EOF
     libboost-thread-dev \
     libboost-program-options-dev \
     libssl-dev \
+    libzmq3-dev \
     acl
 EOF
 
@@ -45,7 +46,7 @@ WORKDIR /opt/dogecoin
 
 RUN <<-EOF
     bash ./autogen.sh && \
-    bash ./configure --enable-hardening --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/dogecoin/build && \
+    bash ./configure --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/dogecoin/build && \
     echo $(getconf _NPROCESSORS_ONLN) && \
     make -j $(getconf _NPROCESSORS_ONLN) && \
     make install && \
@@ -71,6 +72,7 @@ RUN <<-EOF
     libboost-test-dev \
     libboost-thread-dev \
     libboost-program-options-dev \
+    libzmq3-dev \
     net-tools \
     curl \
     jq \
