@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=2.2.3
+ARG VERSION=2.3.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -46,7 +46,7 @@ RUN <<-EOF
     mkdir cmake_build && \
     cd cmake_build && \
     conan install .. --output-folder . --build missing --settings build_type=Release && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_INSTALL_PREFIX=/opt/ripple/build -Dstatic=OFF -B./ ..
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_INSTALL_PREFIX=/opt/ripple/build -Dstatic=OFF -Dxrpld=ON -Dtests=ON -B./ ..
 EOF
 
 RUN <<-EOF
