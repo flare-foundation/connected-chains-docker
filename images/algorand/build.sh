@@ -1,1 +1,1 @@
-docker build -t flarefoundation/algorand:3.25.0 .
+docker build -t flarefoundation/algorand:4.0.1 .
