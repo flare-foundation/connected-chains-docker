@@ -33,7 +33,7 @@ services:
       - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
   rippled:
-    image: flarefoundation/rippled:2.2.3
+    image: flarefoundation/rippled:2.4.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:22.04 as build
+FROM ubuntu:24.04 as build
 
-ARG VERSION=2.3.0
+ARG VERSION=2.4.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -20,10 +20,16 @@ bison \
 libssl-dev \
 libboost-all-dev \
 pkg-config \
-python3-pip
+python3-pip \
+python3.12-dev \
+python3.12-venv
 EOF
 
-RUN yes | pip3 install conan==1.65.0
+RUN <<-EOF
+    python3.12 -m venv /opt/conan_env && \
+    /opt/conan_env/bin/python -m pip install --upgrade pip setuptools && \
+    /opt/conan_env/bin/python -m pip install "conan<2"
+EOF
 
 RUN <<-EOF
     echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
@@ -37,6 +43,8 @@ EOF
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/ripple/rippled.git /opt/ripple
 
 WORKDIR /opt/ripple
+
+ENV PATH="/opt/conan_env/bin:$PATH"
 
 RUN <<-EOF
     git config --global http.postBuffer 1048576000 && \
@@ -52,21 +60,14 @@ EOF
 RUN <<-EOF
     cd cmake_build && \
     cmake --build . --target install -- -j 8 && \
-    ./rippled --unittest && \
-    mkdir -p /opt/ripple/.ripple/db && \
-    chmod 755 /opt/ripple/.ripple/db
+    ./rippled --unittest
 EOF
 
-RUN rm -rf .git src .nih_c cmake_build
-
-COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
-COPY ./validators.txt /opt/ripple/.ripple/validators.txt
-
-FROM ubuntu:22.04
-COPY --from=build /opt/ripple/ /opt/ripple/
+FROM ubuntu:24.04
+COPY --from=build /opt/ripple/build /opt/ripple/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-ENV PATH="/opt/ripple/build/bin:${PATH}"
+ENV PATH="/opt/ripple/bin:${PATH}"
 
 RUN <<-EOF
 apt-get -y update && \
@@ -75,8 +76,16 @@ libboost-all-dev \
 net-tools \
 curl \
 jq \
-netcat
+netcat-openbsd
 EOF
+
+RUN <<-EOF
+    mkdir -p /opt/ripple/.ripple/db && \
+    chmod 755 /opt/ripple/.ripple/db
+EOF
+
+COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
+COPY ./validators.txt /opt/ripple/.ripple/validators.txt
 
 # https://xrpl.org/commandline-usage.html
 ENTRYPOINT ["rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
