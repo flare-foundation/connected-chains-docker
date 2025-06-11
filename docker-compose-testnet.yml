@@ -1,6 +1,6 @@
 services:
   bitcoin:
-    image: flarefoundation/bitcoin:28.1
+    image: flarefoundation/bitcoin:29.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London
