@@ -1,3 +1,4 @@
 .DS_store
 *.zip
 algod.token
+.idea
