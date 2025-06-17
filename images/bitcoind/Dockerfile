@@ -1,64 +1,37 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM ubuntu:22.04 as build
 
-ARG VERSION=v28.1
+ARG VERSION=v29.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
+# https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#linux-distribution-specific-instructions
 RUN <<-EOF
     apt-get -y update && \
     apt-get -y install \
     git \
     build-essential \
-    libtool \
-    autotools-dev \
-    automake \
-    pkg-config \
-    bsdmainutils \
+    cmake \
+    pkgconf \
     python3 \
-    python3-pip \
     libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libzmq3-dev \
-    acl
+    libboost-dev \
+    libzmq3-dev
 EOF
-
-RUN <<-EOF
-    echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "* hard nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} hard nofile 1048576" >> /etc/security/limits.conf && \
-    cat /etc/security/limits.conf && \
-    ulimit -Sn
-EOF
-
-RUN pip install --upgrade pip && pip3 install pexpect
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/bitcoin/bitcoin.git /opt/bitcoin
 
 WORKDIR /opt/bitcoin
 
 RUN <<-EOF
-    bash ./autogen.sh && \
-    bash ./configure --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/bitcoin/build && \
-    echo $(getconf _NPROCESSORS_ONLN) && \
-    make -j $(getconf _NPROCESSORS_ONLN) && \
-    make install && \
-    mkdir -p /opt/bitcoin/.bitcoin/db && \
-    chmod 755 /opt/bitcoin/.bitcoin/db
+   cmake -B build -DENABLE_WALLET=OFF -DWITH_ZMQ=ON
+   cmake --build build -j 4
+   cmake --install build
 EOF
 
-COPY ./bitcoin.conf /opt/bitcoin/.bitcoin/bitcoin.conf
-
 FROM ubuntu:22.04
-COPY --from=build /opt/bitcoin/build /opt/bitcoin/build
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-ENV PATH="/opt/bitcoin/build/bin:${PATH}"
 
 RUN <<-EOF
     apt-get -y update && \
@@ -75,5 +48,12 @@ RUN <<-EOF
     jq \
     netcat
 EOF
+
+RUN groupadd --gid "10001" "bitcoin" && \
+    useradd --uid "10001" --gid "10001" --shell /bin/bash --create-home "bitcoin" && \
+    mkdir -p /opt/bitcoin/.bitcoin/db && \
+    chown -R bitcoin:bitcoin /opt/bitcoin/
+
+COPY --from=build /usr/local/bin /usr/local/bin
 
 ENTRYPOINT ["bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
