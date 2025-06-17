@@ -51,13 +51,13 @@ services:
 
   algorand:
     image: flarefoundation/algorand:4.1.2
+    restart: on-failure:3
     ports:
       - ${BIND_IP}:6332:8080
       - ${BIND_IP}:4160:4160
       - ${BIND_IP}:9100:9100
     environment:
       - TZ=Europe/London      # IMPORTANT: set to your timezone or else DNSSEC fails
-      #ALGOD_TOKEN: changeitchangeitchangeitchangeitchangeitchangeitchangeitchangeit
     volumes:
       - algorand-data:/opt/algorand/.algorand
       - ./config/algorand/config.json:/opt/algorand/.algorand/config.json
