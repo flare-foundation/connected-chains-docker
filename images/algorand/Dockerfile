@@ -18,12 +18,17 @@ RUN <<-EOF
     git \
     make \
     gcc \
+    gosu \
     g++ \
     pkg-config \
     libboost-dev \
     autoconf \
     automake \
     python3 && \
+    cp /usr/bin/jq /tmp/jq && \
+    cp /usr/bin/curl /tmp/curl && \
+    cp /usr/sbin/gosu /tmp/gosu && \
+    chmod +x /tmp/jq /tmp/curl /tmp/gosu && \
     curl -L -o /tmp/go-linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xf /tmp/go-linux-amd64.tar.gz
 EOF
@@ -42,6 +47,14 @@ RUN <<-EOF
     cp installer/genesis/testnet/genesis.json /opt/algorand/algorand-defaults/genesis-testnet.json
 EOF
 
+ARG USER_ID=10200
+ARG GROUP_ID=10200
+
+RUN groupadd -g ${GROUP_ID} algo && \
+    useradd -u ${USER_ID} -g algo -d /opt/algorand algo && \ 
+    cp /etc/passwd /tmp/passwd && \
+    cp /etc/group /tmp/group
+
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
@@ -50,23 +63,16 @@ WORKDIR /opt/algorand
 ENV PATH=/opt/algorand/go/bin:/opt/algorand/scripts:/usr/local/go/bin:$PATH
 ENV GOPATH=/opt/algorand/go
 
-ARG USER_ID=10200
-ARG GROUP_ID=10200
+COPY --from=build /tmp/passwd /etc/passwd
+COPY --from=build /tmp/group /etc/group
 
-RUN groupadd -g ${GROUP_ID} algo && useradd -u ${USER_ID} -g algo -d /opt/algorand algo
+COPY --from=build /tmp/jq /usr/bin/jq
+COPY --from=build /tmp/curl /usr/bin/curl
+COPY --from=build /tmp/gosu /usr/bin/gosu
 
 COPY --from=build /tmp/go-linux-amd64.tar.gz /tmp
 COPY --from=build /opt/algorand/go/ /opt/algorand/go/
 COPY --from=build /opt/algorand/algorand-defaults/ /opt/algorand/algorand-defaults/
-
-RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install jq curl gosu && \
-    cd /tmp && \
-    tar -C /usr/local -xf go-linux-amd64.tar.gz && \
-    rm go-linux-amd64.tar.gz && \
-    apt-get clean
-EOF
 
 COPY scripts/ /opt/algorand/scripts/
 COPY default-config/ /opt/algorand/default-config/
