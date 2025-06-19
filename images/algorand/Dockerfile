@@ -25,14 +25,10 @@ RUN <<-EOF
     autoconf \
     automake \
     python3 && \
-    cp /usr/bin/jq /tmp/jq && \
-    cp /usr/bin/curl /tmp/curl && \
-    cp /usr/sbin/gosu /tmp/gosu && \
-    chmod +x /tmp/jq /tmp/curl /tmp/gosu && \
     curl -L -o /tmp/go-linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xf /tmp/go-linux-amd64.tar.gz
 EOF
-
+    
 RUN <<-EOF
     git clone --branch "$ALGORAND_VERSION" https://github.com/algorand/go-algorand.git && \
     cd go-algorand && \
@@ -46,6 +42,13 @@ RUN <<-EOF
     cp installer/genesis/devnet/genesis.json /opt/algorand/algorand-defaults/genesis-devnet.json && \
     cp installer/genesis/testnet/genesis.json /opt/algorand/algorand-defaults/genesis-testnet.json
 EOF
+    
+COPY scripts/entrypoint.go /tmp/entrypoint.go
+RUN go build -o /tmp/entrypoint /tmp/entrypoint.go
+    
+RUN cp /usr/bin/jq /tmp/jq && \
+    cp /usr/bin/curl /tmp/curl && \
+    cp /usr/sbin/gosu /tmp/gosu 
 
 ARG USER_ID=10200
 ARG GROUP_ID=10200
@@ -55,13 +58,18 @@ RUN groupadd -g ${GROUP_ID} algo && \
     cp /etc/passwd /tmp/passwd && \
     cp /etc/group /tmp/group
 
-FROM ubuntu:22.04
+RUN mkdir -p /opt/algorand/.algorand && \
+    chown -R algo:algo /opt/algorand && \
+    touch /opt/algorand/.algorand/algod.token
+
+FROM gcr.io/distroless/base-debian12:latest as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 WORKDIR /opt/algorand
 ENV PATH=/opt/algorand/go/bin:/opt/algorand/scripts:/usr/local/go/bin:$PATH
 ENV GOPATH=/opt/algorand/go
+ENV ALGORAND_DATA=/opt/algorand/.algorand
 
 COPY --from=build /tmp/passwd /etc/passwd
 COPY --from=build /tmp/group /etc/group
@@ -70,20 +78,12 @@ COPY --from=build /tmp/jq /usr/bin/jq
 COPY --from=build /tmp/curl /usr/bin/curl
 COPY --from=build /tmp/gosu /usr/bin/gosu
 
-COPY --from=build /tmp/go-linux-amd64.tar.gz /tmp
 COPY --from=build /opt/algorand/go/ /opt/algorand/go/
 COPY --from=build /opt/algorand/algorand-defaults/ /opt/algorand/algorand-defaults/
+COPY --from=build /opt/algorand/.algorand/ /opt/algorand/.algorand/
 
-COPY scripts/ /opt/algorand/scripts/
+COPY --from=build /tmp/entrypoint /opt/algorand/scripts/entrypoint
 COPY default-config/ /opt/algorand/default-config/
 
-RUN <<-EOF
-    mkdir -p /opt/algorand/.algorand && \
-    chown -R algo:algo /opt/algorand && \
-    touch /opt/algorand/.algorand/algod.token 
-EOF
-
-ENV ALGORAND_DATA="/opt/algorand/.algorand"
-
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/opt/algorand/scripts/entrypoint"]
 CMD ["algod"]
