@@ -59,7 +59,7 @@ services:
       - ${BIND_IP}:18080:8080
       - ${BIND_IP}:4161:4161
     environment:
-      - TZ=Europe/London      # IMPORTANT: set to your timezone or else DNSSEC fails
+      - TZ=Europe/London
       - ALGOD_NETWORK: testnet
     volumes:
       - algorand-testnet-data:/opt/algorand/.algorand
