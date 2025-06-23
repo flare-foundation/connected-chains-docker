@@ -16,7 +16,11 @@ RUN <<-EOF
     python3 \
     libevent-dev \
     libboost-dev \
-    libzmq3-dev
+    libzmq3-dev \
+    net-tools \
+    curl \
+    jq \
+    netcat
 EOF
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/bitcoin/bitcoin.git /opt/bitcoin
@@ -29,31 +33,45 @@ RUN <<-EOF
    cmake --install build
 EOF
 
-FROM ubuntu:22.04
-
-ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-
-RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install \
-    libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libzmq3-dev \
-    net-tools \
-    curl \
-    jq \
-    netcat
-EOF
-
 RUN groupadd --gid "10001" "bitcoin" && \
     useradd --uid "10001" --gid "10001" --shell /bin/bash --create-home "bitcoin" && \
     mkdir -p /opt/bitcoin/.bitcoin/db && \
     chown -R bitcoin:bitcoin /opt/bitcoin/
 
+FROM gcr.io/distroless/cc-debian12:latest
+
+ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
+
 COPY --from=build /usr/local/bin /usr/local/bin
+
+# Libraries (ldd /usr/local/bin/bitcoind)
+COPY --from=build /usr/lib/x86_64-linux-gnu/libevent*.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libzmq.so.5 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libbsd.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libsodium.so.23 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpgm-5.3.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libnorm.so.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libgssapi_krb5.so.2 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libmd.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libkrb5.so.3 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libk5crypto.so.3 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libcom_err.so.2 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libkrb5support.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libkeyutils.so.1 /usr/lib/x86_64-linux-gnu/
+
+# Tools
+COPY --from=build /usr/bin/curl /usr/bin/curl
+COPY --from=build /usr/bin/jq /usr/bin/jq
+COPY --from=build /usr/bin/netcat /usr/bin/netcat
+COPY --from=build /usr/bin/netstat /usr/bin/netstat
+
+# Bitcoin Core
+COPY --from=build /opt/bitcoin/.bitcoin/db /opt/bitcoin/.bitcoin/db
+
+# User and group
+COPY --from=build /etc/passwd /etc/passwd
+COPY --from=build /etc/group /etc/group
+
+USER bitcoin
 
 ENTRYPOINT ["bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
