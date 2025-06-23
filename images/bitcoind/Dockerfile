@@ -63,7 +63,7 @@ COPY --from=build /usr/bin/jq /usr/bin/jq
 COPY --from=build /usr/bin/netcat /usr/bin/netcat
 COPY --from=build /usr/bin/netstat /usr/bin/netstat
 
-# Bitcoin Core
+# Bitcoin data
 COPY --from=build /opt/bitcoin/.bitcoin/db /opt/bitcoin/.bitcoin/db
 
 ENTRYPOINT ["bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
