@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"strconv"
 	"syscall"
 )
 
@@ -28,27 +26,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Switch to non-root
-	if os.Geteuid() == 0 {
-		if err := switchToAlgoUserAndExec(args); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to switch user: %v\n", err)
-			os.Exit(1)
-		}
-	} else {
-		if err := execCommand(args); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to execute command: %v\n", err)
-			os.Exit(1)
-		}
+	if err := execCommand(args); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to execute command: %v\n", err)
+		os.Exit(1)
 	}
 }
 
 func execCommand(args []string) error {
 	return syscall.Exec(args[0], args, os.Environ())
-}
-
-func switchToAlgoUserAndExec(args []string) error {
-	gosuArgs := append([]string{"/usr/bin/gosu", "algo"}, args...)
-	return syscall.Exec(gosuArgs[0], gosuArgs, os.Environ())
 }
 
 func initialize() error {
@@ -67,30 +52,8 @@ func initialize() error {
 				return fmt.Errorf("Failed to copy config file: %w", err)
 			}
 		}
-
-		algoUID, err := strconv.Atoi(os.Getenv("USER_ID"))
-		if err != nil {
-			return fmt.Errorf("failed to parse USER_ID: %w", err)
-		}
-		algoGID, err := strconv.Atoi(os.Getenv("GROUP_ID"))
-		if err != nil {
-			return fmt.Errorf("failed to parse GROUP_ID: %w", err)
-		}
-
-		if err := chownRecursive(algorandDir, algoUID, algoGID); err != nil {
-			return fmt.Errorf("failed to change ownership: %w", err)
-		}
 	}
 	return nil
-}
-
-func chownRecursive(path string, uid, gid int) error {
-	return filepath.WalkDir(path, func(name string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		return os.Chown(name, uid, gid)
-	})
 }
 
 func setupGenesis() error {
