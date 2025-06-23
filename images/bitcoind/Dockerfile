@@ -33,12 +33,10 @@ RUN <<-EOF
    cmake --install build
 EOF
 
-RUN groupadd --gid "10001" "bitcoin" && \
-    useradd --uid "10001" --gid "10001" --shell /bin/bash --create-home "bitcoin" && \
-    mkdir -p /opt/bitcoin/.bitcoin/db && \
-    chown -R bitcoin:bitcoin /opt/bitcoin/
+RUN mkdir -p /opt/bitcoin/.bitcoin/db && \
+    chown -R 65532:65532 /opt/bitcoin/
 
-FROM gcr.io/distroless/cc-debian12:latest
+FROM gcr.io/distroless/cc-debian12:nonroot as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -67,11 +65,5 @@ COPY --from=build /usr/bin/netstat /usr/bin/netstat
 
 # Bitcoin Core
 COPY --from=build /opt/bitcoin/.bitcoin/db /opt/bitcoin/.bitcoin/db
-
-# User and group
-COPY --from=build /etc/passwd /etc/passwd
-COPY --from=build /etc/group /etc/group
-
-USER bitcoin
 
 ENTRYPOINT ["bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
