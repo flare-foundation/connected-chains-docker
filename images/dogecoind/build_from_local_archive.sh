@@ -1,1 +1,1 @@
-docker build --build-arg SOURCE_ZIP=dogecoin-1.14.8-flare.zip --build-arg SOURCE_FOLDER=dogecoin-1.14.8-flare -f Dockerfile-wls -t flarefoundation/dogecoin:1.14.8-wls .
+docker build --build-arg SOURCE_ZIP=dogecoin-1.14.9-flare.zip --build-arg SOURCE_FOLDER=dogecoin-1.14.9-flare -f Dockerfile-wls -t flarefoundation/dogecoin:1.14.9-wls .
