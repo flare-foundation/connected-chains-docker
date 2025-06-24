@@ -24,7 +24,6 @@ RUN <<-EOF
     libboost-thread-dev \
     libboost-program-options-dev \
     libssl-dev \
-    acl \
     net-tools \
     curl \
     jq \
