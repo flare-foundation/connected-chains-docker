@@ -16,8 +16,6 @@ RUN <<-EOF
     automake \
     pkg-config \
     bsdmainutils \
-    python3 \
-    python3-pip \
     libevent-dev \
     libboost-system-dev \
     libboost-filesystem-dev \
@@ -27,23 +25,16 @@ RUN <<-EOF
     libboost-program-options-dev \
     libssl-dev \
     acl \
+    net-tools \
+    curl \
+    jq \
+    netcat \
     unzip
 EOF
 
-RUN <<-EOF
-    echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "* hard nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} hard nofile 1048576" >> /etc/security/limits.conf && \
-    cat /etc/security/limits.conf && \
-    ulimit -Sn
-EOF
-
-RUN pip install --upgrade pip && pip3 install pexpect
-
 COPY $SOURCE_ZIP /tmp/
 RUN unzip /tmp/$SOURCE_ZIP -d /tmp
-RUN mkdir /opt/dogecoin && mv /tmp/$SOURCE_FOLDER/* /opt/dogecoin && ls -la /opt/dogecoin
+RUN mkdir /opt/dogecoin && mv /tmp/$SOURCE_FOLDER/* /opt/dogecoin 
 
 WORKDIR /opt/dogecoin
 
@@ -54,31 +45,42 @@ RUN <<-EOF
     make -j $(getconf _NPROCESSORS_ONLN) && \
     make install && \
     mkdir -p /opt/dogecoin/.dogecoin/db && \
-    chmod 755 /opt/dogecoin/.dogecoin/db
+    chmod 755 /opt/dogecoin/.dogecoin/db && \
+    chown -R 65532:65532 /opt/dogecoin/
 EOF
 
 COPY ./dogecoin.conf /opt/dogecoin/.dogecoin/dogecoin.conf
 
-FROM ubuntu:22.04
+FROM gcr.io/distroless/cc-debian12:nonroot as final
+
 COPY --from=build /opt/dogecoin/ /opt/dogecoin/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 ENV PATH="/opt/dogecoin/build/bin:${PATH}"
 
-RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install \
-    libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libboost-program-options-dev \
-    net-tools \
-    curl \
-    jq \
-    netcat
-EOF
+# Libraries (ldd /opt/dogecoin/build/bin/dogecoind)
+COPY --from=build /usr/lib/x86_64-linux-gnu/libboost*.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libevent*.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libzmq.so.5 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libm.so.6 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libbsd.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libsodium.so.23 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libpgm-5.3.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libnorm.so.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libgssapi_krb5.so.2 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libmd.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libkrb5.so.3 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libk5crypto.so.3 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libcom_err.so.2 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libkrb5support.so.0 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libkeyutils.so.1 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /usr/lib/x86_64-linux-gnu/libresolv.so.2 /usr/lib/x86_64-linux-gnu/
+
+# Tools
+COPY --from=build /usr/bin/curl /usr/bin/curl
+COPY --from=build /usr/bin/jq /usr/bin/jq
+COPY --from=build /usr/bin/netcat /usr/bin/netcat
+COPY --from=build /usr/bin/netstat /usr/bin/netstat
 
 ENTRYPOINT ["dogecoind", "-conf=/opt/dogecoin/.dogecoin/dogecoin.conf", "-datadir=/opt/dogecoin/.dogecoin/db", "-printtoconsole", "-txindex=1"]
