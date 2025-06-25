@@ -1,1 +1,1 @@
-docker build -t flarefoundation/rippled:2.4.0 .
+docker build -t flarefoundation/rippled:2.5.0 .
