@@ -1,1 +1,1 @@
-docker buildx build --progress=plain -t flarefoundation/litecoin:0.21.3 .
+docker buildx build -t flarefoundation/litecoin:0.21.4 .
