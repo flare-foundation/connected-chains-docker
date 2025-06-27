@@ -58,12 +58,22 @@ RUN <<-EOF
     chown 65532:65532 /opt/ripple/.ripple/db
 EOF
 
-FROM gcr.io/distroless/cc-debian12:nonroot as final
+RUN ldd /opt/ripple/build/bin/rippled
+
+FROM gcr.io/distroless/base-debian12:nonroot as final
 
 COPY --from=build /opt/ripple/build /opt/ripple/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 ENV PATH="/opt/ripple/bin:${PATH}"
+
+# Libraries (ldd /opt/ripple/bin/rippled)
+COPY --from=build /lib/x86_64-linux-gnu/libstdc++.so.6  /lib/x86_64-linux-gnu
+COPY --from=build /lib/x86_64-linux-gnu/libm.so.6       /lib/x86_64-linux-gnu
+COPY --from=build /lib/x86_64-linux-gnu/libgcc_s.so.1   /lib/x86_64-linux-gnu
+COPY --from=build /lib/x86_64-linux-gnu/libc.so.6       /lib/x86_64-linux-gnu
+
+COPY --from=build /lib64/ld-linux-x86-64.so.2 /lib64
 
 # Tools
 COPY --from=build /usr/bin/curl /usr/bin/curl
