@@ -26,6 +26,7 @@ RUN <<-EOF
         -DCMAKE_INSTALL_PREFIX=/opt/bitcoin/build/
     cmake --build build -j 8
     cmake --install build
+    strip -s /opt/bitcoin/build/bin/*
 EOF
 
 RUN mkdir -p /opt/bitcoin/.bitcoin/db && \
@@ -35,7 +36,7 @@ FROM gcr.io/distroless/cc-debian12:nonroot as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-COPY --from=build /opt/bitcoin/build /opt/bitcoin/
+COPY --from=build /opt/bitcoin/build/bin /opt/bitcoin/bin
 COPY --from=build /opt/bitcoin/.bitcoin/db /opt/bitcoin/.bitcoin/db
 
 ENTRYPOINT ["/opt/bitcoin/bin/bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
