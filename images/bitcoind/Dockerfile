@@ -38,5 +38,6 @@ ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 COPY --from=build /opt/bitcoin/build/bin /opt/bitcoin/bin
 COPY --from=build /opt/bitcoin/.bitcoin/db /opt/bitcoin/.bitcoin/db
+COPY bitcoin.conf /opt/bitcoin/.bitcoin/bitcoin.conf
 
 ENTRYPOINT ["/opt/bitcoin/bin/bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
