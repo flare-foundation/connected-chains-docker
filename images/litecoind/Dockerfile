@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:22.04 as build
+
+# gcc 11 and 12 in Debian 12 are incompatible with version of Boost libraries 
+# in Litecoin's 'depends' build system
+FROM debian:11 as build
 
 ARG VERSION=v0.21.4
 
@@ -8,83 +11,45 @@ ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 # Remove libdb++-dev after upstream fixes the problem with --disable-wallet requiring it
 RUN <<-EOF
     apt-get -y update && \
-    apt-get -y install software-properties-common && \
-    add-apt-repository universe && \
-    apt-get -y update && \
     apt-get -y install \
     git \
     build-essential \
     libtool \
-    autotools-dev \
-    automake \
     pkg-config \
-    bsdmainutils \
-    python3 \
-    python3-pip \
-    libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libssl-dev \
-    libuv1-dev \
-    libzmq3-dev \
-    acl \
-    libfmt-dev \
-    libdb++-dev
+    libdb++-dev \
+    curl \
+    cmake 
 EOF
-
-RUN <<-EOF
-    echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "* hard nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} hard nofile 1048576" >> /etc/security/limits.conf && \
-    cat /etc/security/limits.conf && \
-    ulimit -Sn
-EOF
-
-RUN pip install --upgrade pip && pip3 install pexpect
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/litecoin-project/litecoin.git /opt/litecoin
 
 WORKDIR /opt/litecoin
 
 RUN <<-EOF
-    bash ./autogen.sh && \
-    bash ./configure --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/litecoin/build && \
-    echo $(getconf _NPROCESSORS_ONLN) && \
-    make -j $(getconf _NPROCESSORS_ONLN) && \
-    make install && \
-    mkdir -p /opt/litecoin/.litecoin/db && \
-    chmod 755 /opt/litecoin/.litecoin/db
+    make -C /opt/litecoin/depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1 NO_BDB=1
+    ./autogen.sh
+    ./configure \
+        --disable-tests \
+        --disable-bench \
+        --disable-wallet \
+        --without-gui \
+        --prefix=/opt/litecoin/depends/x86_64-pc-linux-gnu/
+    make -j $(getconf _NPROCESSORS_ONLN)
+    make install
 EOF
 
 COPY ./litecoin.conf /opt/litecoin/.litecoin/litecoin.conf
 
-FROM ubuntu:22.04
-COPY --from=build /opt/litecoin/ /opt/litecoin/
-
-ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-ENV PATH="/opt/litecoin/build/bin:${PATH}"
-
 RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install \
-    libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libzmq3-dev \
-    libfmt-dev \
-    net-tools \
-    curl \
-    jq \
-    netcat
+    mkdir -p /opt/litecoin/.litecoin/db
+    chown -R 65532:65532 /opt/litecoin/depends/x86_64-pc-linux-gnu/
 EOF
 
-RUN ls -la /opt/litecoin
+FROM gcr.io/distroless/cc-debian12:nonroot as final
 
-ENTRYPOINT ["litecoind", "-conf=/opt/litecoin/.litecoin/litecoin.conf", "-datadir=/opt/litecoin/.litecoin/db", "-txindex=1"]
+ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
+
+COPY --from=build /opt/litecoin/depends/x86_64-pc-linux-gnu/ /opt/litecoin/
+COPY --from=build /opt/litecoin/.litecoin/db /opt/litecoin/.litecoin/db
+
+ENTRYPOINT ["/opt/litecoin/bin/litecoind", "-conf=/opt/litecoin/.litecoin/litecoin.conf", "-datadir=/opt/litecoin/.litecoin/db", "-txindex=1"]
