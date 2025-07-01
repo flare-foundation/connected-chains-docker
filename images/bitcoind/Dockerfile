@@ -20,11 +20,11 @@ RUN git clone --single-branch --branch "${VERSION}" https://github.com/bitcoin/b
 WORKDIR /opt/bitcoin
 
 RUN <<-EOF
-    make -C depends/ -j 8 NO_QT=1 NO_QR=1 NO_WALLET=1
+    make -C depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1
     cmake -B build \
         --toolchain /opt/bitcoin/depends/x86_64-pc-linux-gnu/toolchain.cmake \
         -DCMAKE_INSTALL_PREFIX=/opt/bitcoin/build/
-    cmake --build build -j 8
+    cmake --build build -j $(getconf _NPROCESSORS_ONLN) 
     cmake --install build
     strip -s /opt/bitcoin/build/bin/*
 EOF
