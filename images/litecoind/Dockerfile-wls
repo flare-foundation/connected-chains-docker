@@ -40,20 +40,21 @@ RUN <<-EOF
         --prefix=/opt/litecoin/depends/x86_64-pc-linux-gnu/
     make -j $(getconf _NPROCESSORS_ONLN)
     make install
+    find /opt/litecoin/depends/x86_64-pc-linux-gnu/bin/ -type f -executable ! -name "*.*" -exec strip -s {} \;
 EOF
 
-COPY ./litecoin.conf /opt/litecoin/.litecoin/litecoin.conf
+COPY litecoin.conf /opt/litecoin/.litecoin/litecoin.conf
 
 RUN <<-EOF
     mkdir -p /opt/litecoin/.litecoin/db
-    chown -R 65532:65532 /opt/litecoin/depends/x86_64-pc-linux-gnu/
+    chown -R 65532:65532 /opt/litecoin/
 EOF
 
 FROM gcr.io/distroless/cc-debian12:nonroot as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-COPY --from=build /opt/litecoin/depends/x86_64-pc-linux-gnu/ /opt/litecoin/
-COPY --from=build /opt/litecoin/.litecoin/db /opt/litecoin/.litecoin/db
+COPY --from=build /opt/litecoin/depends/x86_64-pc-linux-gnu/bin/ /opt/litecoin/bin/
+COPY --from=build /opt/litecoin/.litecoin/ /opt/litecoin/.litecoin/
 
 ENTRYPOINT ["/opt/litecoin/bin/litecoind", "-conf=/opt/litecoin/.litecoin/litecoin.conf", "-datadir=/opt/litecoin/.litecoin/db", "-txindex=1"]
