@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:24.04 as build
+FROM debian:12 as build
 
 ARG VERSION=2.5.0
 
@@ -12,17 +12,12 @@ RUN <<-EOF
     build-essential \
     cmake \
     pkg-config \
-    python3-pip \
-    python3.12-dev \
-    python3.12-venv \
-    net-tools \
-    curl \
-    jq \
-    netcat-openbsd
+    python3 \
+    python3.11-venv \
 EOF
 
 RUN <<-EOF
-    python3.12 -m venv /opt/conan_env && \
+    python3 -m venv /opt/conan_env && \
     /opt/conan_env/bin/python -m pip install --upgrade pip setuptools && \
     /opt/conan_env/bin/python -m pip install "conan<2"
 EOF
@@ -38,55 +33,43 @@ RUN <<-EOF
     git config --global http.postBuffer 1048576000 && \
     conan profile new default --detect && \
     conan profile update settings.compiler.cppstd=20 default && \
-    conan profile update conf.tools.build:jobs=4 default && \
+    conan profile update conf.tools.build:jobs=1 default && \
     conan export external/snappy snappy/1.1.10@ && \
     mkdir cmake_build && \
     cd cmake_build && \
-    conan install .. --output-folder . --build missing --settings build_type=Release && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_INSTALL_PREFIX=/opt/ripple/build -Dstatic=OFF -Dxrpld=ON -Dtests=OFF -B./ ..
+    conan install \
+        .. \
+        --output-folder . \
+        --build missing \
+        --settings build_type=Release && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake \
+        -DCMAKE_INSTALL_PREFIX=/opt/ripple/build \
+        -Dstatic=ON \
+        -Dxrpld=ON \
+        -Dtests=OFF \
+        -B./ ..
 EOF
 
 # Job count of 8 consumes ~10GB of memory at peak
 RUN <<-EOF
     cd cmake_build && \
     cmake --build . --target install -- -j 8 && \
-    chown -R 65532:65532 /opt/ripple/build
+    strip -s /opt/ripple/build/bin/* && \
+    mkdir -p /opt/ripple/.ripple/db
 EOF
 
-RUN <<-EOF
-    mkdir -p /opt/ripple/.ripple/db && \
-    chown 65532:65532 /opt/ripple/.ripple/db
-EOF
+COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
-RUN ldd /opt/ripple/build/bin/rippled
+RUN chown -R 65532:65532 /opt/ripple/
 
 FROM gcr.io/distroless/base-debian12:nonroot as final
 
-COPY --from=build /opt/ripple/build /opt/ripple/
-
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-ENV PATH="/opt/ripple/bin:${PATH}"
 
-# Libraries (ldd /opt/ripple/bin/rippled)
-COPY --from=build /lib/x86_64-linux-gnu/libstdc++.so.6  /lib/x86_64-linux-gnu
-COPY --from=build /lib/x86_64-linux-gnu/libm.so.6       /lib/x86_64-linux-gnu
-COPY --from=build /lib/x86_64-linux-gnu/libgcc_s.so.1   /lib/x86_64-linux-gnu
-COPY --from=build /lib/x86_64-linux-gnu/libc.so.6       /lib/x86_64-linux-gnu
-
-COPY --from=build /lib64/ld-linux-x86-64.so.2 /lib64
-
-# Tools
-COPY --from=build /usr/bin/curl /usr/bin/curl
-COPY --from=build /usr/bin/jq /usr/bin/jq
-COPY --from=build /usr/bin/netcat /usr/bin/netcat
-COPY --from=build /usr/bin/netstat /usr/bin/netstat
-
-# Ripple data
-COPY --from=build /opt/ripple/.ripple/db /opt/ripple/.ripple/db 
-
-# Ripple configuration
-COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
-COPY ./validators.txt /opt/ripple/.ripple/validators.txt
+COPY --from=build /opt/ripple/build/bin/ /opt/ripple/bin/
+COPY --from=build /opt/ripple/.ripple/ /opt/ripple/.ripple/
 
 # https://xrpl.org/commandline-usage.html
-ENTRYPOINT ["rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
+ENTRYPOINT ["/opt/ripple/bin/rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
