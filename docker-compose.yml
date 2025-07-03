@@ -56,6 +56,9 @@ services:
       - ${BIND_IP}:6332:8080
       - ${BIND_IP}:4160:4160
       - ${BIND_IP}:9100:9100
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     environment:
       - TZ=Europe/London
     volumes:

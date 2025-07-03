@@ -58,6 +58,9 @@ services:
     ports:
       - ${BIND_IP}:18080:8080
       - ${BIND_IP}:4161:4161
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     environment:
       - TZ=Europe/London
       - ALGOD_NETWORK: testnet
