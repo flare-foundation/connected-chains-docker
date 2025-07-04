@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:22.04 as build
+FROM debian:12 as build
 
 ARG VERSION=v1.14.9
 
@@ -10,24 +10,10 @@ RUN <<-EOF
     apt-get -y install \
     git \
     build-essential \
+    cmake \
     libtool \
-    autotools-dev \
-    automake \
     pkg-config \
-    bsdmainutils \
-    libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libboost-program-options-dev \
-    libssl-dev \
-    libzmq3-dev \
-    net-tools \
-    curl \
-    jq \
-    netcat
+    curl
 EOF
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/dogecoin/dogecoin.git /opt/dogecoin
@@ -35,48 +21,31 @@ RUN git clone --single-branch --branch "${VERSION}" https://github.com/dogecoin/
 WORKDIR /opt/dogecoin
 
 RUN <<-EOF
-    bash ./autogen.sh && \
-    bash ./configure --disable-wallet --without-gui --disable-tests --disable-bench --prefix=/opt/dogecoin/build && \
-    echo $(getconf _NPROCESSORS_ONLN) && \
+    make -C /opt/dogecoin/depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1 NO_BDB=1 && \
+    ./autogen.sh && \
+    ./configure \
+        --disable-wallet \
+        --without-gui \
+        --disable-tests \
+        --disable-bench \
+        --prefix=/opt/dogecoin/depends/x86_64-pc-linux-gnu/ && \
     make -j $(getconf _NPROCESSORS_ONLN) && \
     make install && \
+    find /opt/dogecoin/go/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
+EOF
+
+COPY dogecoin.conf /opt/dogecoin/.dogecoin/dogecoin.conf
+
+RUN <<-EOF
     mkdir -p /opt/dogecoin/.dogecoin/db && \
-    chmod 755 /opt/dogecoin/.dogecoin/db  && \
     chown -R 65532:65532 /opt/dogecoin/
 EOF
 
-COPY ./dogecoin.conf /opt/dogecoin/.dogecoin/dogecoin.conf
-
 FROM gcr.io/distroless/cc-debian12:nonroot as final
 
-COPY --from=build /opt/dogecoin/ /opt/dogecoin/
-
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-ENV PATH="/opt/dogecoin/build/bin:${PATH}"
 
-# Libraries (ldd /opt/dogecoin/build/bin/dogecoind)
-COPY --from=build /usr/lib/x86_64-linux-gnu/libboost*.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libevent*.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libzmq.so.5 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libm.so.6 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libbsd.so.0 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libsodium.so.23 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libpgm-5.3.so.0 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libnorm.so.1 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libgssapi_krb5.so.2 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libmd.so.0 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libkrb5.so.3 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libk5crypto.so.3 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libcom_err.so.2 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libkrb5support.so.0 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libkeyutils.so.1 /usr/lib/x86_64-linux-gnu/
-COPY --from=build /usr/lib/x86_64-linux-gnu/libresolv.so.2 /usr/lib/x86_64-linux-gnu/
+COPY --from=build /opt/dogecoin/depends/x86_64-pc-linux-gnu/bin/ /opt/dogecoin/bin/
+COPY --from=build /opt/dogecoin/.dogecoin/ /opt/dogecoin/.dogecoin/
 
-# Tools
-COPY --from=build /usr/bin/curl /usr/bin/curl
-COPY --from=build /usr/bin/jq /usr/bin/jq
-COPY --from=build /usr/bin/netcat /usr/bin/netcat
-COPY --from=build /usr/bin/netstat /usr/bin/netstat
-
-ENTRYPOINT ["dogecoind", "-conf=/opt/dogecoin/.dogecoin/dogecoin.conf", "-datadir=/opt/dogecoin/.dogecoin/db", "-printtoconsole", "-txindex=1"]
+ENTRYPOINT ["/opt/dogecoin/bin/dogecoind", "-conf=/opt/dogecoin/.dogecoin/dogecoin.conf", "-datadir=/opt/dogecoin/.dogecoin/db", "-printtoconsole", "-txindex=1"]
