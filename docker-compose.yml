@@ -10,6 +10,22 @@ services:
       - bitcoin-data:/opt/bitcoin/.bitcoin/db
       - ./config/bitcoin/bitcoin.conf:/opt/bitcoin/.bitcoin/bitcoin.conf
 
+  bitcoin-debug:
+    image: debian:12
+    pid: service:bitcoin
+    network_mode: service:bitcoin
+    privileged: true
+    command: |
+      bash -c "
+        apt-get update && 
+        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
+        sleep infinity
+      "
+    depends_on:
+      - bitcoin
+    profiles: 
+      - debug
+
   litecoin:
     image: flarefoundation/litecoin:0.21.3
     restart: on-failure:3
@@ -21,6 +37,22 @@ services:
       - litecoin-data:/opt/litecoin/.litecoin/db
       - ./config/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
+  litecoin-debug:
+    image: debian:12
+    pid: service:litecoin
+    network_mode: service:litecoin
+    privileged: true
+    command: |
+      bash -c "
+        apt-get update && 
+        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
+        sleep infinity
+      "
+    depends_on:
+      - litecoin
+    profiles: 
+      - debug
+
   dogecoin:
     image: flarefoundation/dogecoin:1.14.9
     restart: on-failure:3
@@ -31,6 +63,22 @@ services:
     volumes:
       - dogecoin-data:/opt/dogecoin/.dogecoin/db
       - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
+
+  dogecoin-debug:
+    image: debian:12
+    pid: service:dogecoin
+    network_mode: service:dogecoin
+    privileged: true
+    command: |
+      bash -c "
+        apt-get update && 
+        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
+        sleep infinity
+      "
+    depends_on:
+      - dogecoin
+    profiles: 
+      - debug
 
   rippled:
     image: flarefoundation/rippled:2.4.0
@@ -49,6 +97,22 @@ services:
       - ./config/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf
       - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
+  rippled-debug:
+    image: debian:12
+    pid: service:rippled
+    network_mode: service:rippled
+    privileged: true
+    command: |
+      bash -c "
+        apt-get update && 
+        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
+        sleep infinity
+      "
+    depends_on:
+      - rippled
+    profiles: 
+      - debug
+
   algorand:
     image: flarefoundation/algorand:4.1.2
     ports:
@@ -61,6 +125,22 @@ services:
       - algorand-data:/opt/algorand/.algorand
       - ./config/algorand/config.json:/opt/algorand/.algorand/config.json
       - ./config/algorand/algod.token:/opt/algorand/.algorand/algod.token
+
+  algorand-debug:
+    image: debian:12
+    pid: service:algorand
+    network_mode: service:algorand
+    privileged: true
+    command: |
+      bash -c "
+        apt-get update && 
+        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
+        sleep infinity
+      "
+    depends_on:
+      - algorand
+    profiles: 
+      - debug
 
 volumes:
   bitcoin-data:
