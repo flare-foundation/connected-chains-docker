@@ -70,6 +70,34 @@ docker compose stop bitcoin
 
 You can check the bootstrap process with the `hc.sh` script. `./hc <your-provided-password>`
 
+# Debugging
+
+Distroless images do not contain a shell to run commands for debugging. Sidecar debug containers, attached to the main container through shared namespaces, need to be used.
+
+All containers:
+```
+docker compose --profile debug up -d
+```
+
+Single container:
+```
+docker compose up -d bitcoin-debug
+```
+
+Example commands:
+```
+# show processes of main and debug container
+docker compose exec bitcoin-debug ps aux
+
+# show contents of PID 1 (main container process) root directory
+docker compose exec bitcoin-debug ls -lha /proc/1/root/
+
+# show contents of bitcoin node directory
+docker compose exec bitcoin-debug ls -lha /proc/1/root/opt/bitcoin/
+```
+
+Add tools by specifying them in `docker-compose.yml` `<node>-debug` services or use your own debugging image.
+
 # Logs
 
 ```
