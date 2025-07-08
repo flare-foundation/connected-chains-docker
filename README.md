@@ -74,29 +74,34 @@ You can check the bootstrap process with the `hc.sh` script. `./hc <your-provide
 
 Distroless images do not contain a shell to run commands for debugging. Sidecar debug containers, attached to the main container through shared namespaces, need to be used.
 
-All containers:
+Attaching a debug container:
 ```
-docker compose --profile debug up -d
-```
-
-Single container:
-```
-docker compose up -d bitcoin-debug
+docker run \
+  --rm -it --privileged \
+  --net=container:<node-name> --pid=container:<node-name> \
+  flarefoundation/distroless-debug:1.0.0
 ```
 
 Example commands:
 ```
+# attach to running bitcoin node's namespaces
+# and open an interactive terminal
+docker run \
+  --rm -it --privileged \
+  --net=container:bitcoin --pid=container:bitcoin \
+  flarefoundation/distroless-debug:1.0.0
+
 # show processes of main and debug container
-docker compose exec bitcoin-debug ps aux
+ps aux
 
 # show contents of PID 1 (main container process) root directory
-docker compose exec bitcoin-debug ls -lha /proc/1/root/
+ls -lha /proc/1/root/
 
 # show contents of bitcoin node directory
-docker compose exec bitcoin-debug ls -lha /proc/1/root/opt/bitcoin/
+ls -lha /proc/1/root/opt/bitcoin/
 ```
 
-Add tools by specifying them in `docker-compose.yml` `<node>-debug` services or use your own debugging image.
+Add tools by specifying them in `./images/debug/Dockerfile` or use your own debugging image.
 
 # Logs
 
