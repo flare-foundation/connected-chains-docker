@@ -13,12 +13,16 @@ done
 
 sleep 1
 
-ALGOD_ADMIN_TOKEN=$(docker exec ${ALGOD_CONTAINER} cat /opt/algorand/.algorand/algod.admin.token)
+docker cp ${ALGOD_CONTAINER}:/opt/algorand/.algorand/algod.admin.token /tmp/algod.admin.token > /dev/null
+ALGOD_ADMIN_TOKEN=$(cat /tmp/algod.admin.token)
+rm /tmp/algod.admin.token
 
 LAST_ROUND=$(curl -s -H "X-Algo-API-Token: ${ALGOD_ADMIN_TOKEN}" "${ALGOD_URL}/v2/status" | jq -r '.["last-round"]')
 CURRENT_CATCHPOINT=$(curl -s -H "X-Algo-API-Token: ${ALGOD_ADMIN_TOKEN}" "${ALGOD_URL}/v2/status" | jq -r '.catchpoint')
 
-ALGOD_NETWORK=$(docker exec ${ALGOD_CONTAINER} printenv ALGOD_NETWORK) || true
+docker cp ${ALGOD_CONTAINER}:/opt/algorand/.algorand/genesis.json /tmp/genesis.json > /dev/null
+ALGOD_NETWORK=$(cat /tmp/genesis.json | jq -r '.network')
+rm /tmp/genesis.json
 
 if [ -z "${ALGOD_NETWORK}" ]; then
 	ALGOD_NETWORK="mainnet"

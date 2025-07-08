@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:22.04 as build
+FROM debian:12 as build
 
 ARG ALGORAND_VERSION=v4.1.2-stable
 ARG GO_VERSION=1.23.9
@@ -13,7 +13,6 @@ ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 RUN <<-EOF
     apt-get -y update && \
     apt-get -y install \
-    jq \
     curl \
     git \
     make \
@@ -27,13 +26,14 @@ RUN <<-EOF
     curl -L -o /tmp/go-linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xf /tmp/go-linux-amd64.tar.gz
 EOF
-
+    
 RUN <<-EOF
     git clone --branch "$ALGORAND_VERSION" https://github.com/algorand/go-algorand.git && \
     cd go-algorand && \
     ./scripts/configure_dev.sh && \
     ./scripts/buildtools/install_buildtools.sh && \
     make build && \
+    find /opt/algorand/go/bin -type f -executable -exec strip -s {} + 2>/dev/null || true && \
     ./scripts/local_install.sh -c stable -p ${GOPATH}/bin -d /opt/algorand/algorand-defaults -f -s && \
     rm /opt/algorand/algorand-defaults/genesis.json && \
     cp installer/genesis/mainnet/genesis.json /opt/algorand/algorand-defaults/genesis-mainnet.json && \
@@ -42,42 +42,33 @@ RUN <<-EOF
     cp installer/genesis/testnet/genesis.json /opt/algorand/algorand-defaults/genesis-testnet.json
 EOF
 
-FROM ubuntu:22.04
+RUN mkdir -p /opt/algorand/.algorand && \
+    touch /opt/algorand/.algorand/algod.token && \
+    touch /opt/algorand/.algorand/algod.admin.token && \
+    chown -R 65532:65532 /opt/algorand/
+
+COPY scripts/entrypoint.go /tmp/entrypoint.go
+RUN go build -o /tmp/entrypoint /tmp/entrypoint.go && \
+    chown 65532:65532 /tmp/entrypoint
+
+FROM gcr.io/distroless/static-debian12:nonroot as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-WORKDIR /opt/algorand
-ENV PATH=/opt/algorand/go/bin:/opt/algorand/scripts:/usr/local/go/bin:$PATH
 ENV GOPATH=/opt/algorand/go
+ENV ALGORAND_DATA=/opt/algorand/.algorand
 
-ARG USER_ID=10200
-ARG GROUP_ID=10200
-
-RUN groupadd -g ${GROUP_ID} algo && useradd -u ${USER_ID} -g algo -d /opt/algorand algo
-
-COPY --from=build /tmp/go-linux-amd64.tar.gz /tmp
-COPY --from=build /opt/algorand/go/ /opt/algorand/go/
+# Binaries for core functionality
+COPY --from=build \
+    /opt/algorand/go/bin/algod \
+    /opt/algorand/go/bin/goal \
+    /opt/algorand/go/bin/kmd \
+    /opt/algorand/go/bin/
 COPY --from=build /opt/algorand/algorand-defaults/ /opt/algorand/algorand-defaults/
+COPY --from=build --chown=65532:65532 /opt/algorand/.algorand/ /opt/algorand/.algorand/
 
-RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install jq curl gosu && \
-    cd /tmp && \
-    tar -C /usr/local -xf go-linux-amd64.tar.gz && \
-    rm go-linux-amd64.tar.gz && \
-    apt-get clean
-EOF
-
-COPY scripts/ /opt/algorand/scripts/
+COPY --from=build /tmp/entrypoint /opt/algorand/scripts/entrypoint
 COPY default-config/ /opt/algorand/default-config/
 
-RUN <<-EOF
-    mkdir -p /opt/algorand/.algorand && \
-    chown -R algo:algo /opt/algorand && \
-    touch /opt/algorand/.algorand/algod.token 
-EOF
-
-ENV ALGORAND_DATA="/opt/algorand/.algorand"
-
-ENTRYPOINT ["entrypoint.sh"]
-CMD ["algod"]
+ENTRYPOINT ["/opt/algorand/scripts/entrypoint"]
+CMD ["/opt/algorand/go/bin/algod"]
