@@ -1,5 +1,6 @@
 services:
   bitcoin:
+    container_name: bitcoin
     image: flarefoundation/bitcoin:29.0
     restart: on-failure:3
     environment:
@@ -11,23 +12,8 @@ services:
       - bitcoin-testnet-data:/opt/bitcoin/.bitcoin/db
       - ./config-testnet/bitcoin/bitcoin.conf:/opt/bitcoin/.bitcoin/bitcoin.conf
 
-  bitcoin-debug:
-    image: debian:12
-    pid: service:bitcoin
-    network_mode: service:bitcoin
-    privileged: true
-    command: |
-      bash -c "
-        apt-get update && 
-        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
-        sleep infinity
-      "
-    depends_on:
-      - bitcoin
-    profiles: 
-      - debug
-
   litecoin:
+    container_name: litecoin
     image: flarefoundation/litecoin:0.21.3
     restart: on-failure:3
     environment:
@@ -39,23 +25,8 @@ services:
       - litecoin-testnet-data:/opt/litecoin/.litecoin/db
       - ./config-testnet/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
-  litecoin-debug:
-    image: debian:12
-    pid: service:litecoin
-    network_mode: service:litecoin
-    privileged: true
-    command: |
-      bash -c "
-        apt-get update && 
-        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
-        sleep infinity
-      "
-    depends_on:
-      - litecoin
-    profiles: 
-      - debug
-
   dogecoin:
+    container_name: dogecoin
     image: flarefoundation/dogecoin:1.14.9
     restart: on-failure:3
     environment:
@@ -67,23 +38,8 @@ services:
       - dogecoin-testnet-data:/opt/dogecoin/.dogecoin/db
       - ./config-testnet/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
-  dogecoin-debug:
-    image: debian:12
-    pid: service:dogecoin
-    network_mode: service:dogecoin
-    privileged: true
-    command: |
-      bash -c "
-        apt-get update && 
-        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
-        sleep infinity
-      "
-    depends_on:
-      - dogecoin
-    profiles: 
-      - debug
-
   rippled:
+    container_name: rippled
     image: flarefoundation/rippled:2.4.0
     restart: on-failure:3
     environment:
@@ -100,23 +56,8 @@ services:
       - ./config-testnet/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf
       - ./config-testnet/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
-  rippled-debug:
-    image: debian:12
-    pid: service:rippled
-    network_mode: service:rippled
-    privileged: true
-    command: |
-      bash -c "
-        apt-get update && 
-        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
-        sleep infinity
-      "
-    depends_on:
-      - rippled
-    profiles: 
-      - debug
-
   algorand:
+    container_name: algorand
     image: flarefoundation/algorand:4.1.2
     ports:
       - ${BIND_IP}:18080:8080
@@ -127,22 +68,6 @@ services:
       - algorand-testnet-data:/opt/algorand/.algorand
       - ./config-testnet/algorand/config.json:/opt/algorand/.algorand/config.json
       - ./config-testnet/algorand/algod.token:/opt/algorand/.algorand/algod.token
-
-  algorand-debug:
-    image: debian:12
-    pid: service:algorand
-    network_mode: service:algorand
-    privileged: true
-    command: |
-      bash -c "
-        apt-get update && 
-        apt-get install -y curl jq netcat-openbsd tcpdump strace &&
-        sleep infinity
-      "
-    depends_on:
-      - algorand
-    profiles: 
-      - debug
 
 volumes:
   bitcoin-testnet-data:
