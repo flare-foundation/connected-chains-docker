@@ -1,1 +1,0 @@
-docker build --build-arg SOURCE_ZIP=litecoin-0.21.4-flare.zip --build-arg SOURCE_FOLDER=litecoin-0.21.4-flare -f Dockerfile-wls -t flarefoundation/litecoin:0.21.4-wls .
