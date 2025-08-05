@@ -1,5 +1,7 @@
 # Flare/Songbird Attestation Provider - Connected Chains Docker images
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/flare-foundation/connected-chains-docker/badge)](https://scorecard.dev/viewer/?uri=github.com/flare-foundation/connected-chains-docker)
+
 A quickstart repo filled with Docker images which allows people to get up and running with the chains connected to the Flare Network.
 
 The following nodes are included:
