@@ -41,9 +41,6 @@ jobs:
       - name: "Run analysis"
         uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
         with:
-          # Select applicable checks (https://github.com/ossf/scorecard?tab=readme-ov-file#scorecard-checks)
-          # All except fuzzing
-          checks: "Binary-Artifacts,Branch-Protection,CI-Tests,CII-Best-Practices,Code-Review,Contributors,Dangerous-Workflow,Dependency-Update-Tool,License,Maintained,Pinned-Dependencies,Packaging,SAST,Security-Policy,Signed-Releases,Token-Permissions,Vulnerabilities"
           results_file: results.sarif
           results_format: sarif
           # (Optional) "write" PAT token. Uncomment the `repo_token` line below if:
