@@ -59,11 +59,16 @@ services:
   algorand:
     container_name: algorand
     image: flarefoundation/algorand:4.1.2
+    restart: on-failure:3
     ports:
       - ${BIND_IP}:18080:8080
       - ${BIND_IP}:4161:4161
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     environment:
-      ALGOD_NETWORK: testnet
+      - TZ=Europe/London
+      - ALGOD_NETWORK: testnet
     volumes:
       - algorand-testnet-data:/opt/algorand/.algorand
       - ./config-testnet/algorand/config.json:/opt/algorand/.algorand/config.json
