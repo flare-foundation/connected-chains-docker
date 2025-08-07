@@ -1,29 +1,27 @@
 # syntax=docker/dockerfile:1.3-labs
-# debian:12
-FROM debian@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
+FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
 ARG VERSION=2.5.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 RUN <<-EOF
-    apt-get -y update && \
+    apt-get -y update &&
     apt-get -y install \
+    python3-venv \
+    curl \
     git \
     build-essential \
-    cmake \
-    pkg-config \
-    python3 \
-    python3.11-venv \
+    cmake
 EOF
 
-# to generate requirements.txt, run:
-# echo "conan<2" > requirements.in
-# pip-compile --generate-hashes requirements.in
+# To generate requirements.txt, run:
+# echo "conan" > requirements.in
+# pip-compile --generate-hashes --output-file=requirements.txt requirements.in
 COPY requirements.txt /tmp/requirements.txt
 
 RUN <<-EOF
-    python3 -m venv /opt/conan_env && \
+    python3 -m venv /opt/conan_env
     /opt/conan_env/bin/python -m pip install -r /tmp/requirements.txt --require-hashes
 EOF
 
@@ -33,20 +31,32 @@ WORKDIR /opt/ripple
 
 ENV PATH="/opt/conan_env/bin:$PATH"
 
-# Increasing job count increases risk of race conditions occuring when installing OpenSSL (conan bug?)
+# New and improved build process, but is not in latest (2.5.0) release yet
+# Move from copying the default profile to using one in 
+# "/opt/ripple/conan/profiles/default" after it gets integrated
+# https://github.com/XRPLF/rippled/blob/develop/BUILD.md
+COPY conan_default conan_default
+
 RUN <<-EOF
-    git config --global http.postBuffer 1048576000 && \
-    conan profile new default --detect && \
-    conan profile update settings.compiler.cppstd=20 default && \
-    conan profile update conf.tools.build:jobs=1 default && \
-    conan export external/snappy snappy/1.1.10@ && \
-    mkdir cmake_build && \
-    cd cmake_build && \
+    git config --global http.postBuffer 1048576000
+    conan profile detect
+    conan config install conan_default -tf $(conan config home)/profiles 
+    conan remote add --index 0 xrplf "https://conan.ripplex.io"
+    conan config set tools.build:jobs=8
+    mkdir cmake_build
+EOF
+
+RUN <<-EOF
+    cd cmake_build
     conan install \
         .. \
         --output-folder . \
         --build missing \
-        --settings build_type=Release && \
+        --settings build_type=Release
+EOF
+
+RUN <<-EOF
+    cd cmake_build
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake \
@@ -57,11 +67,10 @@ RUN <<-EOF
         -B./ ..
 EOF
 
-# Job count of 8 consumes ~10GB of memory at peak
 RUN <<-EOF
-    cd cmake_build && \
-    cmake --build . --target install -- -j 8 && \
-    strip -s /opt/ripple/build/bin/* && \
+    cd cmake_build
+    cmake --build . --target install -- -j 8
+    find /opt/ripple/build/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
     mkdir -p /opt/ripple/.ripple/db
 EOF
 
@@ -69,8 +78,7 @@ COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
 RUN chown -R 65532:65532 /opt/ripple/
 
-# gcr.io/distroless/base-debian12:nonroot
-FROM gcr.io/distroless/base-debian12@sha256:dca858878977f01b80685240ca2cd9c1bb38958e2ab6f4ed5698c0ea23307143 as final
+FROM gcr.io/distroless/base-debian12:nonroot@sha256:dca858878977f01b80685240ca2cd9c1bb38958e2ab6f4ed5698c0ea23307143 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
