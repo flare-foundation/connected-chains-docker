@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:12 as build
+# debian:12
+FROM debian@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
 ARG VERSION=2.5.0
 
@@ -16,10 +17,14 @@ RUN <<-EOF
     python3.11-venv \
 EOF
 
+# to generate requirements.txt, run:
+# echo "conan<2" > requirements.in
+# pip-compile --generate-hashes requirements.in
+COPY requirements.txt /tmp/requirements.txt
+
 RUN <<-EOF
     python3 -m venv /opt/conan_env && \
-    /opt/conan_env/bin/python -m pip install --upgrade pip setuptools && \
-    /opt/conan_env/bin/python -m pip install "conan<2"
+    /opt/conan_env/bin/python -m pip install -r /tmp/requirements.txt --require-hashes
 EOF
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/ripple/rippled.git /opt/ripple
@@ -64,7 +69,8 @@ COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
 RUN chown -R 65532:65532 /opt/ripple/
 
-FROM gcr.io/distroless/base-debian12:nonroot as final
+# gcr.io/distroless/base-debian12:nonroot
+FROM gcr.io/distroless/base-debian12@sha256:dca858878977f01b80685240ca2cd9c1bb38958e2ab6f4ed5698c0ea23307143 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
