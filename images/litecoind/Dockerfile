@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 # Remove libdb++-dev after upstream fixes the problem with --disable-wallet requiring it
 RUN <<-EOF
+    set -e
     apt-get -y update && \
     apt-get -y install \
     git \
@@ -26,6 +27,7 @@ WORKDIR /opt/litecoin
 # https://github.com/boostorg/thread/pull/297/commits/74fb0a26099bc51d717f5f154b37231ce7df3e98
 # CXXFLAGS and CPPFLAGS can be removed if upstream ever updates Boost to 1.73.0 or newer
 RUN <<-EOF
+    set -e
     make -C /opt/litecoin/depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1 NO_BDB=1 \
         boost_cxxflags="-std=c++11 -fvisibility=hidden -DPTHREAD_STACK_MIN=16384" \
         boost_cppflags="-DPTHREAD_STACK_MIN=16384"
@@ -40,21 +42,17 @@ RUN <<-EOF
         CPPFLAGS="-DPTHREAD_STACK_MIN=16384"
     make -j $(getconf _NPROCESSORS_ONLN)
     make install && \
-    find /opt/litecoin/depends/x86_64-pc-linux-gnu/bin/ -type f -executable ! -name "*.*" -exec strip -s {} \;
+    find /opt/litecoin/depends/x86_64-pc-linux-gnu/bin/ -type f -executable -exec strip -s {} + 2>/dev/null || true
 EOF
 
 COPY litecoin.conf /opt/litecoin/.litecoin/litecoin.conf
-
-RUN <<-EOF
-    mkdir -p /opt/litecoin/.litecoin/db
-    chown -R 65532:65532 /opt/litecoin/
-EOF
+RUN mkdir -p /opt/litecoin/.litecoin/db
 
 FROM gcr.io/distroless/cc-debian12:nonroot@sha256:d1b8e4c52be1111aa108e959ef2a822299bb70fd1819dd250871a2601ca1e4b6 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-COPY --from=build /opt/litecoin/depends/x86_64-pc-linux-gnu/bin/ /opt/litecoin/bin/
-COPY --from=build /opt/litecoin/.litecoin/ /opt/litecoin/.litecoin/
+COPY --from=build --chown=65532:65532 /opt/litecoin/depends/x86_64-pc-linux-gnu/bin/ /opt/litecoin/bin/
+COPY --from=build --chown=65532:65532 /opt/litecoin/.litecoin/ /opt/litecoin/.litecoin/
 
 ENTRYPOINT ["/opt/litecoin/bin/litecoind", "-conf=/opt/litecoin/.litecoin/litecoin.conf", "-datadir=/opt/litecoin/.litecoin/db", "-txindex=1"]
