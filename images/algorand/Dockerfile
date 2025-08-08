@@ -11,23 +11,24 @@ ENV GOPATH=/opt/algorand/go
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install \
-    curl \
-    git \
-    make \
-    gcc \
-    g++ \
-    pkg-config \
-    libboost-dev \
-    autoconf \
-    automake \
-    python3
+    set -e
+    apt-get -y update && apt-get -y install \
+        curl \
+        git \
+        make \
+        gcc \
+        g++ \
+        pkg-config \
+        libboost-dev \
+        autoconf \
+        automake \
+        python3
     curl -L -o /tmp/go-linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz
     tar -C /usr/local -xf /tmp/go-linux-amd64.tar.gz
 EOF
     
 RUN <<-EOF
+    set -e
     git clone --branch "$ALGORAND_VERSION" https://github.com/algorand/go-algorand.git
     cd go-algorand
     ./scripts/configure_dev.sh
@@ -43,15 +44,14 @@ RUN <<-EOF
 EOF
 
 RUN <<-EOF
+    set -e
     mkdir -p /opt/algorand/.algorand
     touch /opt/algorand/.algorand/algod.token
     touch /opt/algorand/.algorand/algod.admin.token
 EOF
 
 COPY scripts/entrypoint.go /tmp/entrypoint.go
-RUN <<-EOF
-    go build -o /tmp/entrypoint /tmp/entrypoint.go
-EOF
+RUN go build -o /tmp/entrypoint /tmp/entrypoint.go
 
 FROM gcr.io/distroless/static-debian12:nonroot@sha256:cdf4daaf154e3e27cfffc799c16f343a384228f38646928a1513d925f473cb46 as final
 
