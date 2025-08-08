@@ -1,8 +1,16 @@
-# Reporting Security Vulnerabilities
+# Security policy
 
-If you discover a security vulnerability in this project, please report it following these guidelines:
-- We ask that you do not publicly disclose your findings, at least until the issue is processed
-- Privately and directly disclose information regarding this repository using the GitHub Security Advisory ["Report a Vulnerability"](https://github.com/flare-foundation/connected-chains-docker/security/advisories/new) tab
-- For more serious or general Flare network security vulnerabilities, turn to [Flare's bug bounty on Immunefi](https://immunefi.com/bug-bounty/flarenetwork/information/)
+## Reporting a vulnerability
 
-We appreciate your efforts.
+If you have found a possible vulnerability, please email
+`security at flare dot network`.
+
+## Bug bounties
+
+We currently don't run any bug bounty program for this project.
+
+## Vulnerability disclosures
+
+Critical vulnerabilities will be disclosed via GitHub's
+[security advisory](https://github.com/flare-foundation/connected-chains-docker/security)
+system.
