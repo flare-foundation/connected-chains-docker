@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:12 as build
+FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
 ARG VERSION=v1.14.9
 
@@ -41,7 +41,7 @@ RUN <<-EOF
     chown -R 65532:65532 /opt/dogecoin/
 EOF
 
-FROM gcr.io/distroless/cc-debian12:nonroot as final
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:d1b8e4c52be1111aa108e959ef2a822299bb70fd1819dd250871a2601ca1e4b6 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
