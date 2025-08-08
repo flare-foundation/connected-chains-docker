@@ -6,13 +6,13 @@ ARG VERSION=2.5.0
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 RUN <<-EOF
-    apt-get -y update &&
-    apt-get -y install \
-    python3-venv \
-    curl \
-    git \
-    build-essential \
-    cmake
+    set -e
+    apt-get -y update && apt-get -y install \
+        python3-venv \
+        curl \
+        git \
+        build-essential \
+        cmake
 EOF
 
 # To generate requirements.txt, run:
@@ -21,6 +21,7 @@ EOF
 COPY requirements.txt /tmp/requirements.txt
 
 RUN <<-EOF
+    set -e
     python3 -m venv /opt/conan_env
     /opt/conan_env/bin/python -m pip install -r /tmp/requirements.txt --require-hashes
 EOF
@@ -38,15 +39,16 @@ ENV PATH="/opt/conan_env/bin:$PATH"
 COPY conan_default conan_default
 
 RUN <<-EOF
+    set -e
     git config --global http.postBuffer 1048576000
     conan profile detect
     conan config install conan_default -tf $(conan config home)/profiles 
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
-    conan config set tools.build:jobs=8
     mkdir cmake_build
 EOF
 
 RUN <<-EOF
+    set -e
     cd cmake_build
     conan install \
         .. \
@@ -56,6 +58,7 @@ RUN <<-EOF
 EOF
 
 RUN <<-EOF
+    set -e
     cd cmake_build
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
@@ -68,6 +71,7 @@ RUN <<-EOF
 EOF
 
 RUN <<-EOF
+    set -e
     cd cmake_build
     cmake --build . --target install -- -j 8
     find /opt/ripple/build/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
@@ -76,14 +80,12 @@ EOF
 
 COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
-RUN chown -R 65532:65532 /opt/ripple/
-
 FROM gcr.io/distroless/base-debian12:nonroot@sha256:dca858878977f01b80685240ca2cd9c1bb38958e2ab6f4ed5698c0ea23307143 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-COPY --from=build /opt/ripple/build/bin/ /opt/ripple/bin/
-COPY --from=build /opt/ripple/.ripple/ /opt/ripple/.ripple/
+COPY --from=build --chown=65532:65532 /opt/ripple/build/bin/ /opt/ripple/bin/
+COPY --from=build --chown=65532:65532 /opt/ripple/.ripple/ /opt/ripple/.ripple/
 
 # https://xrpl.org/commandline-usage.html
 ENTRYPOINT ["/opt/ripple/bin/rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
