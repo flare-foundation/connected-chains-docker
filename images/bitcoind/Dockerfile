@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:22.04 as build
+FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
 ARG VERSION=v29.0
 
@@ -12,11 +12,7 @@ RUN <<-EOF
     git \
     build-essential \
     cmake \
-    pkgconf \
-    python3 \
-    libevent-dev \
-    libboost-dev \
-    libzmq3-dev
+    curl
 EOF
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/bitcoin/bitcoin.git /opt/bitcoin
@@ -24,36 +20,24 @@ RUN git clone --single-branch --branch "${VERSION}" https://github.com/bitcoin/b
 WORKDIR /opt/bitcoin
 
 RUN <<-EOF
-   cmake -B build -DENABLE_WALLET=OFF -DWITH_ZMQ=ON
-   cmake --build build -j 4
-   cmake --install build
+    make -C depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1
+    cmake -B build \
+        --toolchain /opt/bitcoin/depends/x86_64-pc-linux-gnu/toolchain.cmake \
+        -DCMAKE_INSTALL_PREFIX=/opt/bitcoin/build/
+    cmake --build build -j $(getconf _NPROCESSORS_ONLN) 
+    cmake --install build
+    find /opt/bitcoin/build/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
 EOF
 
-FROM ubuntu:22.04
+RUN mkdir -p /opt/bitcoin/.bitcoin/db && \
+    chown -R 65532:65532 /opt/bitcoin/
+
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:d1b8e4c52be1111aa108e959ef2a822299bb70fd1819dd250871a2601ca1e4b6 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-RUN <<-EOF
-    apt-get -y update && \
-    apt-get -y install \
-    libevent-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libboost-chrono-dev \
-    libboost-test-dev \
-    libboost-thread-dev \
-    libzmq3-dev \
-    net-tools \
-    curl \
-    jq \
-    netcat
-EOF
+COPY --from=build /opt/bitcoin/build/bin /opt/bitcoin/bin
+COPY --from=build /opt/bitcoin/.bitcoin/db /opt/bitcoin/.bitcoin/db
+COPY bitcoin.conf /opt/bitcoin/.bitcoin/bitcoin.conf
 
-RUN groupadd --gid "10001" "bitcoin" && \
-    useradd --uid "10001" --gid "10001" --shell /bin/bash --create-home "bitcoin" && \
-    mkdir -p /opt/bitcoin/.bitcoin/db && \
-    chown -R bitcoin:bitcoin /opt/bitcoin/
-
-COPY --from=build /usr/local/bin /usr/local/bin
-
-ENTRYPOINT ["bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
+ENTRYPOINT ["/opt/bitcoin/bin/bitcoind", "-conf=/opt/bitcoin/.bitcoin/bitcoin.conf", "-datadir=/opt/bitcoin/.bitcoin/db", "-txindex=1"]
