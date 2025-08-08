@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:12 as build
+FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
 ARG VERSION=v0.21.4
 
@@ -24,7 +24,7 @@ WORKDIR /opt/litecoin
 
 # Define PTHREAD_STACK_MIN to avoid build failure with Boost 1.70.0 libraries
 # https://github.com/boostorg/thread/pull/297/commits/74fb0a26099bc51d717f5f154b37231ce7df3e98
-# CXXFLAGS and CPPFLAGS can be removed if upstream ever updates Boost to 1.73.0 <=
+# CXXFLAGS and CPPFLAGS can be removed if upstream ever updates Boost to 1.73.0 or newer
 RUN <<-EOF
     make -C /opt/litecoin/depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1 NO_BDB=1 \
         boost_cxxflags="-std=c++11 -fvisibility=hidden -DPTHREAD_STACK_MIN=16384" \
@@ -50,7 +50,7 @@ RUN <<-EOF
     chown -R 65532:65532 /opt/litecoin/
 EOF
 
-FROM gcr.io/distroless/cc-debian12:nonroot as final
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:d1b8e4c52be1111aa108e959ef2a822299bb70fd1819dd250871a2601ca1e4b6 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
