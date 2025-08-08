@@ -1,1 +1,1 @@
-docker build --progress=plain -t flarefoundation/dogecoin:1.14.9 .
+docker build -t flarefoundation/dogecoin:1.14.9 .
