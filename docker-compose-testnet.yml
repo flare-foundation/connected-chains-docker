@@ -14,7 +14,7 @@ services:
 
   litecoin:
     container_name: litecoin
-    image: flarefoundation/litecoin:0.21.3
+    image: flarefoundation/litecoin:0.21.4
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -40,7 +40,7 @@ services:
 
   rippled:
     container_name: rippled
-    image: flarefoundation/rippled:2.4.0
+    image: flarefoundation/rippled:2.5.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London
