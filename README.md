@@ -1,6 +1,9 @@
 # Flare/Songbird Attestation Provider - Connected Chains Docker images
 
-**Images have been updated to follow rootless and distroless practices. For existing configurations, follow these instructions after updating: [Update volume permissions](#update-volume-permissions).**
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/flare-foundation/connected-chains-docker/badge)](https://scorecard.dev/viewer/?uri=github.com/flare-foundation/connected-chains-docker)
+
+> [!IMPORTANT]
+> Images have been updated to follow rootless and distroless best practices. For existing configurations, follow these instructions after updating: [Update volume permissions](#update-volume-permissions).**
 
 A quickstart repo filled with Docker images which allows people to get up and running with the chains connected to the Flare Network.
 
