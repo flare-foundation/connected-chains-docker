@@ -79,7 +79,7 @@ Attaching a debug container:
 docker run \
   --rm -it --privileged \
   --net=container:<node-name> --pid=container:<node-name> \
-  flarefoundation/distroless-debug:1.0.0
+  ghcr.io/flare-foundation/flarefoundation/distroless-debug:1.0.0
 ```
 
 Example commands:
@@ -89,7 +89,7 @@ Example commands:
 docker run \
   --rm -it --privileged \
   --net=container:bitcoin --pid=container:bitcoin \
-  flarefoundation/distroless-debug:1.0.0
+  ghcr.io/flare-foundation/flarefoundation/distroless-debug:1.0.0
 
 # show processes of main and debug container
 ps aux
@@ -102,6 +102,15 @@ ls -lha /proc/1/root/opt/bitcoin/
 ```
 
 Add tools by specifying them in `./images/debug/Dockerfile` or use your own debugging image.
+
+## Releasing debug image with Github Actions
+
+Add a tag to trigger the release pipeline. The tagged commit needs to have made changes to images/debug directory. Pull requests also trigger the build pipeline, but do not push the image to registry.
+
+```
+git tag -a <semver> -m "<message>"
+git push origin <semver>
+```
 
 # Logs
 
