@@ -41,7 +41,6 @@ COPY conan_default conan_default
 RUN <<-EOF
     set -e
     git config --global http.postBuffer 1048576000
-    conan profile detect
     conan config install conan_default -tf $(conan config home)/profiles 
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
     mkdir cmake_build
@@ -52,6 +51,8 @@ RUN <<-EOF
     cd cmake_build
     conan install \
         .. \
+        --profile:host=conan_default \
+        --profile:build=conan_default \
         --output-folder . \
         --build missing \
         --settings build_type=Release
