@@ -151,7 +151,9 @@ Common build problems:
 
 # Update volume permissions
 
-If you're upgrading from older versions of this repository, you'll need to update the volume permissions to work with the new rootless containers:
+If you're upgrading from older versions of this repository, you'll need to update the volume or bind mount permissions to work with the new rootless containers:
+
+## Volumes
 
 Find volume locations on host:
 ```
@@ -162,6 +164,13 @@ docker inspect <volume-name> | grep Mountpoint
 For every volume, recursively change its ownership to `65532:65532`:
 ```
 sudo chown -R 65532:65532 <volume-mountpoint>
+```
+
+## Bind mounts
+
+Recursively change ownership of directory on host to `65532:65532`:
+```
+sudo chown -R 65532:65532 <host/mount/path>
 ```
 
 # License
