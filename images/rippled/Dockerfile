@@ -1,43 +1,29 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:24.04 as build
+FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
-ARG VERSION=2.4.0
+ARG VERSION=2.5.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
 RUN <<-EOF
-apt-get -y update && \
-apt-get -y install \
-git \
-build-essential \
-cmake \
-gcc \
-g++ \
-protobuf-compiler \
-libprotobuf-dev \
-flex \
-bison \
-libssl-dev \
-libboost-all-dev \
-pkg-config \
-python3-pip \
-python3.12-dev \
-python3.12-venv
+    set -e
+    apt-get -y update && apt-get -y install \
+        python3-venv \
+        curl \
+        git \
+        build-essential \
+        cmake
 EOF
 
-RUN <<-EOF
-    python3.12 -m venv /opt/conan_env && \
-    /opt/conan_env/bin/python -m pip install --upgrade pip setuptools && \
-    /opt/conan_env/bin/python -m pip install "conan<2"
-EOF
+# To generate requirements.txt, run:
+# echo "conan" > requirements.in
+# pip-compile --generate-hashes --output-file=requirements.txt requirements.in
+COPY requirements.txt /tmp/requirements.txt
 
 RUN <<-EOF
-    echo "* soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "* hard nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} soft nofile 1048576" >> /etc/security/limits.conf && \
-    echo "{{ ops_user }} hard nofile 1048576" >> /etc/security/limits.conf && \
-    cat /etc/security/limits.conf && \
-    ulimit -Sn
+    set -e
+    python3 -m venv /opt/conan_env
+    /opt/conan_env/bin/python -m pip install -r /tmp/requirements.txt --require-hashes
 EOF
 
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/ripple/rippled.git /opt/ripple
@@ -46,46 +32,61 @@ WORKDIR /opt/ripple
 
 ENV PATH="/opt/conan_env/bin:$PATH"
 
+# New and improved build process, but is not in latest (2.5.0) release yet
+# Move from copying the default profile to using one in 
+# "/opt/ripple/conan/profiles/default" after it gets integrated
+# https://github.com/XRPLF/rippled/blob/develop/BUILD.md
+COPY conan_default conan_default
+
 RUN <<-EOF
-    git config --global http.postBuffer 1048576000 && \
-    conan profile new default --detect && \
-    conan profile update settings.compiler.cppstd=20 default && \
-    conan export external/snappy snappy/1.1.10@ && \
-    mkdir cmake_build && \
-    cd cmake_build && \
-    conan install .. --output-folder . --build missing --settings build_type=Release && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_INSTALL_PREFIX=/opt/ripple/build -Dstatic=OFF -Dxrpld=ON -Dtests=ON -B./ ..
+    set -e
+    git config --global http.postBuffer 1048576000
+    conan config install conan_default -tf $(conan config home)/profiles 
+    conan remote add --index 0 xrplf "https://conan.ripplex.io"
+    mkdir cmake_build
 EOF
 
 RUN <<-EOF
-    cd cmake_build && \
-    cmake --build . --target install -- -j 8 && \
-    ./rippled --unittest
+    set -e
+    cd cmake_build
+    conan install \
+        .. \
+        --profile:host=conan_default \
+        --profile:build=conan_default \
+        --output-folder . \
+        --build missing \
+        --settings build_type=Release
 EOF
 
-FROM ubuntu:24.04
-COPY --from=build /opt/ripple/build /opt/ripple/
+RUN <<-EOF
+    set -e
+    cd cmake_build
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake \
+        -DCMAKE_INSTALL_PREFIX=/opt/ripple/build \
+        -Dstatic=ON \
+        -Dxrpld=ON \
+        -Dtests=OFF \
+        -B./ ..
+EOF
+
+RUN <<-EOF
+    set -e
+    cd cmake_build
+    cmake --build . --target install -- -j 8
+    find /opt/ripple/build/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
+    mkdir -p /opt/ripple/.ripple/db
+EOF
+
+COPY rippled.conf validators.txt /opt/ripple/.ripple/
+
+FROM gcr.io/distroless/base-debian12:nonroot@sha256:dca858878977f01b80685240ca2cd9c1bb38958e2ab6f4ed5698c0ea23307143 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
-ENV PATH="/opt/ripple/bin:${PATH}"
 
-RUN <<-EOF
-apt-get -y update && \
-apt-get -y install \
-libboost-all-dev \
-net-tools \
-curl \
-jq \
-netcat-openbsd
-EOF
-
-RUN <<-EOF
-    mkdir -p /opt/ripple/.ripple/db && \
-    chmod 755 /opt/ripple/.ripple/db
-EOF
-
-COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
-COPY ./validators.txt /opt/ripple/.ripple/validators.txt
+COPY --from=build --chown=65532:65532 /opt/ripple/build/bin/ /opt/ripple/bin/
+COPY --from=build --chown=65532:65532 /opt/ripple/.ripple/ /opt/ripple/.ripple/
 
 # https://xrpl.org/commandline-usage.html
-ENTRYPOINT ["rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
+ENTRYPOINT ["/opt/ripple/bin/rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
