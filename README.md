@@ -1,4 +1,4 @@
-# Flare/Songbird Attestation Provider - Connected Chains Docker images
+# Flare Connected Chains Docker images
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/flare-foundation/connected-chains-docker/badge)](https://scorecard.dev/viewer/?uri=github.com/flare-foundation/connected-chains-docker)
 
