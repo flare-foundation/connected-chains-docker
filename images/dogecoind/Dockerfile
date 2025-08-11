@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM ubuntu:22.04 as build
+FROM ubuntu:24.04 as build
 
 ARG VERSION=v1.14.9
 
@@ -56,7 +56,7 @@ EOF
 
 COPY ./dogecoin.conf /opt/dogecoin/.dogecoin/dogecoin.conf
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 COPY --from=build /opt/dogecoin/ /opt/dogecoin/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
