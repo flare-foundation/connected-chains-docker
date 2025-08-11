@@ -12,7 +12,7 @@ services:
       - ./config-testnet/bitcoin/bitcoin.conf:/opt/bitcoin/.bitcoin/bitcoin.conf
 
   litecoin:
-    image: flarefoundation/litecoin:0.21.3
+    image: flarefoundation/litecoin:0.21.4
     restart: on-failure:3
     environment:
       - TZ=Europe/London
