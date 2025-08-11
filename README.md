@@ -2,6 +2,9 @@
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/flare-foundation/connected-chains-docker/badge)](https://scorecard.dev/viewer/?uri=github.com/flare-foundation/connected-chains-docker)
 
+> [!IMPORTANT]
+> Images have been updated to follow rootless and distroless best practices. For existing configurations, follow these instructions after updating: [Update volume permissions](#update-volume-permissions).**
+
 A quickstart repo filled with Docker images which allows people to get up and running with the chains connected to the Flare Network.
 
 The following nodes are included:
@@ -148,6 +151,30 @@ Common build problems:
 - OOM kills compiler. Increase memory of your docker daemon (if using Docker desktop), increase Docker daemon swap and lower the parallel jobs flag (the `-j X` parameter).
 - if compiler is killed by OOM, image can continue building as if nothing bad happened. Makes sure to check the logs to confirm that build process succeeded. Otherwise container won't start due to missing binaries.
 - git clone hangs: try to increase the setting `git config --global http.postBuffer <max-bytes>`
+
+# Update volume permissions
+
+If you're upgrading from older versions of this repository, you'll need to update the volume or bind mount permissions to work with the new rootless containers:
+
+## Volumes
+
+Find volume locations on host:
+```
+docker volume ls
+docker inspect <volume-name> | grep Mountpoint
+```
+
+For every volume, recursively change its ownership to `65532:65532`:
+```
+sudo chown -R 65532:65532 <volume-mountpoint>
+```
+
+## Bind mounts
+
+Recursively change ownership of directory on host to `65532:65532`:
+```
+sudo chown -R 65532:65532 <host/mount/path>
+```
 
 # License
 
