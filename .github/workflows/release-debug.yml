@@ -79,7 +79,7 @@ jobs:
           # or with given tag if event is tag
           tags: |
             type=semver,pattern={{version}},value=${{ steps.get_image_tag.outputs.image_tag }},enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') }}
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
             type=ref,event=tag,enable=${{ startsWith(github.ref, 'refs/tags/') }}
           flavor: |
             latest=false
