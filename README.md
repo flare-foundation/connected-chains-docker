@@ -75,6 +75,50 @@ docker compose stop bitcoin
 
 You can check the bootstrap process with the `hc.sh` script. `./hc <your-provided-password>`
 
+# Debugging
+
+Distroless images do not contain a shell to run commands for debugging. Sidecar debug containers, attached to the main container through shared namespaces, need to be used.
+
+Attaching a debug container:
+```
+docker run \
+  --rm -it --privileged \
+  --net=container:<node-name> --pid=container:<node-name> \
+  ghcr.io/flare-foundation/connected-chains-docker/distroless-debug:1.0.0
+```
+
+Example commands:
+```
+# attach to running bitcoin node's namespaces
+# and open an interactive terminal
+docker run \
+  --rm -it --privileged \
+  --net=container:bitcoin --pid=container:bitcoin \
+  ghcr.io/flare-foundation/connected-chains-docker/distroless-debug:1.0.0
+
+# show processes of main and debug container
+ps aux
+
+# show contents of PID 1 (main container process) root directory
+ls -lha /proc/1/root/
+
+# show contents of bitcoin node directory
+ls -lha /proc/1/root/opt/bitcoin/
+```
+
+Add tools by specifying them in `./images/debug/Dockerfile` or use your own debugging image.
+
+## Releasing debug image with Github Actions
+
+Commits to main with changes to `images/debug/**` context will automatically trigger a rebuild and push of image, with tag sourced from `ARG VERSION=<semver>` (suffixes and prefix 'v' allowed) in Dockerfile. 
+
+For development purposes, you can also trigger the pipeline with a custom tag like so (the commit still needs to have made changes to `images/debug/**` context):
+
+```
+git tag -a <tag-name> -m "<message>"
+git push origin <tag-name>
+```
+
 # Logs
 
 ```

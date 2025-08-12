@@ -1,5 +1,6 @@
 services:
   bitcoin:
+    container_name: bitcoin
     image: flarefoundation/bitcoin:29.0
     restart: on-failure:3
     environment:
@@ -11,6 +12,7 @@ services:
       - ./config/bitcoin/bitcoin.conf:/opt/bitcoin/.bitcoin/bitcoin.conf
 
   litecoin:
+    container_name: litecoin
     image: flarefoundation/litecoin:0.21.4
     restart: on-failure:3
     environment:
@@ -22,6 +24,7 @@ services:
       - ./config/litecoin/litecoin.conf:/opt/litecoin/.litecoin/litecoin.conf
 
   dogecoin:
+    container_name: dogecoin
     image: flarefoundation/dogecoin:1.14.9
     restart: on-failure:3
     environment:
@@ -33,6 +36,7 @@ services:
       - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
   rippled:
+    container_name: rippled
     image: flarefoundation/rippled:2.5.0
     restart: on-failure:3
     environment:
@@ -50,6 +54,7 @@ services:
       - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
 
   algorand:
+    container_name: algorand
     image: flarefoundation/algorand:4.1.2
     restart: on-failure:3
     ports:
