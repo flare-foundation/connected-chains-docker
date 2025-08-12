@@ -1,4 +1,4 @@
-name: release debugging image
+name: Release debugging image
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -7,19 +7,17 @@ name: release debugging image
 
 on:
   push:
-    tags:
-      - "**"
-    paths:
-      - images/debug
+    branches: [ "main" ]
+    tags: [ "*" ]
+    paths: [ "images/debug/**" ]
   pull_request:
     branches: [ "main" ]
-    paths:
-      - images/debug
+    paths: [ "images/debug/**" ]
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  IMAGE_NAME: flarefoundation/distroless-debug
+  IMAGE_NAME: ${{ github.repository }}/distroless-debug
 
 jobs:
   build:
@@ -34,6 +32,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get image tag
+        id: get_image_tag
+        run: |
+          VERSION=$(grep "^ARG VERSION=" images/debug/Dockerfile \
+            | cut -d'=' -f2 \
+            | tr -d '"' \
+            | tr -d "'" \
+            | tr -d [:space:])
+          echo $VERSION
+          echo "image_tag=${VERSION}" >> $GITHUB_OUTPUT
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -66,8 +75,11 @@ jobs:
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # tag image with version specified in ARG VERSION in Dockerfile if event is a push
+          # or with given tag if event is tag
           tags: |
-            type=ref,event=tag
+            type=semver,pattern={{version}},value=${{ steps.get_image_tag.outputs.image_tag }},enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') }}
+            type=ref,event=tag,enable=${{ startsWith(github.ref, 'refs/tags/') }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -76,7 +88,6 @@ jobs:
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: images/debug
-          file: Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

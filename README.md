@@ -84,7 +84,7 @@ Attaching a debug container:
 docker run \
   --rm -it --privileged \
   --net=container:<node-name> --pid=container:<node-name> \
-  ghcr.io/flare-foundation/flarefoundation/distroless-debug:1.0.0
+  ghcr.io/flare-foundation/connected-chains-docker/distroless-debug:1.0.0
 ```
 
 Example commands:
@@ -94,7 +94,7 @@ Example commands:
 docker run \
   --rm -it --privileged \
   --net=container:bitcoin --pid=container:bitcoin \
-  ghcr.io/flare-foundation/flarefoundation/distroless-debug:1.0.0
+  ghcr.io/flare-foundation/connected-chains-docker/distroless-debug:1.0.0
 
 # show processes of main and debug container
 ps aux
@@ -110,11 +110,13 @@ Add tools by specifying them in `./images/debug/Dockerfile` or use your own debu
 
 ## Releasing debug image with Github Actions
 
-Add a tag to trigger the release pipeline. The tagged commit needs to have made changes to images/debug directory. Pull requests also trigger the build pipeline, but do not push the image to registry.
+Commits to main with changes to `images/debug/**` context will automatically trigger a rebuild and push of image, with tag sourced from `ARG VERSION=<semver>` (suffixes and prefix 'v' allowed) in Dockerfile. 
+
+For development purposes, you can also trigger the pipeline with a custom tag like so (the commit still needs to have made changes to `images/debug/**` context):
 
 ```
-git tag -a <semver> -m "<message>"
-git push origin <semver>
+git tag -a <tag-name> -m "<message>"
+git push origin <tag-name>
 ```
 
 # Logs
