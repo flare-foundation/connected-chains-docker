@@ -1,7 +1,7 @@
 services:
   bitcoin:
     container_name: bitcoin
-    image: flarefoundation/bitcoin:29.0
+    image: flarefoundation/bitcoin:29.1
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -40,7 +40,7 @@ services:
 
   rippled:
     container_name: rippled
-    image: flarefoundation/rippled:2.5.0
+    image: flarefoundation/rippled:2.6.0
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -58,7 +58,7 @@ services:
 
   algorand:
     container_name: algorand
-    image: flarefoundation/algorand:4.1.2
+    image: flarefoundation/algorand:4.2.1
     restart: on-failure:3
     ports:
       - ${BIND_IP}:18080:8080
