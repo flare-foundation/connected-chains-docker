@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
 
-ARG ALGORAND_VERSION=v4.1.2-stable
+ARG ALGORAND_VERSION=v4.2.1-stable
 ARG GO_VERSION=1.23.9
 
 WORKDIR /opt/algorand
