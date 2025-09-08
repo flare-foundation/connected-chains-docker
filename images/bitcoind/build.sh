@@ -1,1 +1,1 @@
-docker build -t flarefoundation/bitcoin:29.0 .
+docker build -t flarefoundation/bitcoin:29.1 .
