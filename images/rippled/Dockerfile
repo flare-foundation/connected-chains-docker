@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
+FROM debian:12@sha256:731dd1380d6a8d170a695dbeb17fe0eade0e1c29f654cf0a3a07f372191c3f4b as build
 
-ARG VERSION=2.5.0
+ARG VERSION=2.6.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -32,16 +32,11 @@ WORKDIR /opt/ripple
 
 ENV PATH="/opt/conan_env/bin:$PATH"
 
-# New and improved build process, but is not in latest (2.5.0) release yet
-# Move from copying the default profile to using one in 
-# "/opt/ripple/conan/profiles/default" after it gets integrated
 # https://github.com/XRPLF/rippled/blob/develop/BUILD.md
-COPY conan_default conan_default
-
 RUN <<-EOF
     set -e
     git config --global http.postBuffer 1048576000
-    conan config install conan_default -tf $(conan config home)/profiles 
+    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles 
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
     mkdir cmake_build
 EOF
@@ -51,8 +46,8 @@ RUN <<-EOF
     cd cmake_build
     conan install \
         .. \
-        --profile:host=conan_default \
-        --profile:build=conan_default \
+        --profile:host=default \
+        --profile:build=default \
         --output-folder . \
         --build missing \
         --settings build_type=Release
@@ -81,7 +76,7 @@ EOF
 
 COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
-FROM gcr.io/distroless/base-debian12:nonroot@sha256:dca858878977f01b80685240ca2cd9c1bb38958e2ab6f4ed5698c0ea23307143 as final
+FROM gcr.io/distroless/base-debian12:nonroot@sha256:c1201b805d3a35a4e870f9ce9775982dd166a2b0772232638dd2440fbe0e0134 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
