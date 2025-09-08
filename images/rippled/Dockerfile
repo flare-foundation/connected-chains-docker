@@ -32,16 +32,11 @@ WORKDIR /opt/ripple
 
 ENV PATH="/opt/conan_env/bin:$PATH"
 
-# New and improved build process, but is not in latest (2.5.0) release yet
-# Move from copying the default profile to using one in 
-# "/opt/ripple/conan/profiles/default" after it gets integrated
 # https://github.com/XRPLF/rippled/blob/develop/BUILD.md
-COPY conan_default conan_default
-
 RUN <<-EOF
     set -e
     git config --global http.postBuffer 1048576000
-    conan config install conan_default -tf $(conan config home)/profiles 
+    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles 
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
     mkdir cmake_build
 EOF
@@ -51,8 +46,8 @@ RUN <<-EOF
     cd cmake_build
     conan install \
         .. \
-        --profile:host=conan_default \
-        --profile:build=conan_default \
+        --profile:host=default \
+        --profile:build=default \
         --output-folder . \
         --build missing \
         --settings build_type=Release
