@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:12@sha256:731dd1380d6a8d170a695dbeb17fe0eade0e1c29f654cf0a3a07f372191c3f4b as build
+FROM debian:bookworm@sha256:93492d1405a072c9d3b89110490e330e0b7eb37754cafc9520908b7fe6873f5f as build
 
-ARG VERSION=2.6.0
+ARG VERSION=2.6.1
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -15,14 +15,12 @@ RUN <<-EOF
         cmake
 EOF
 
-# To generate requirements.txt, run:
-# echo "conan" > requirements.in
-# pip-compile --generate-hashes --output-file=requirements.txt requirements.in
-COPY requirements.txt /tmp/requirements.txt
-
 RUN <<-EOF
     set -e
+    echo "conan" > /tmp/requirements.in
     python3 -m venv /opt/conan_env
+    /opt/conan_env/bin/python -m pip install pip-tools
+    /opt/conan_env/bin/pip-compile --generate-hashes --output-file=/tmp/requirements.txt /tmp/requirements.in
     /opt/conan_env/bin/python -m pip install -r /tmp/requirements.txt --require-hashes
 EOF
 

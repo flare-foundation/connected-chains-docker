@@ -40,7 +40,7 @@ services:
 
   rippled:
     container_name: rippled
-    image: flarefoundation/rippled:2.6.0
+    image: flarefoundation/rippled:2.6.1-dless
     restart: on-failure:3
     environment:
       - TZ=Europe/London
