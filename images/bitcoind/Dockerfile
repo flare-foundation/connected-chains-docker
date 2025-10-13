@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:12@sha256:b6507e340c43553136f5078284c8c68d86ec8262b1724dde73c325e8d3dcdeba as build
+FROM debian:bookworm@sha256:93492d1405a072c9d3b89110490e330e0b7eb37754cafc9520908b7fe6873f5f as build
 
-ARG VERSION=v29.1
+ARG VERSION=v30.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -22,7 +22,7 @@ WORKDIR /opt/bitcoin
 
 RUN <<-EOF
     set -e
-    make -C depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1
+    make -C depends/ -j $(getconf _NPROCESSORS_ONLN) NO_QT=1 NO_QR=1 NO_WALLET=1 NO_IPC=1
     cmake -B build \
         --toolchain /opt/bitcoin/depends/x86_64-pc-linux-gnu/toolchain.cmake \
         -DCMAKE_INSTALL_PREFIX=/opt/bitcoin/build/
@@ -33,7 +33,7 @@ EOF
 
 RUN mkdir -p /opt/bitcoin/.bitcoin/db
 
-FROM gcr.io/distroless/cc-debian12:nonroot@sha256:d1b8e4c52be1111aa108e959ef2a822299bb70fd1819dd250871a2601ca1e4b6 as final
+FROM gcr.io/distroless/cc-debian12:nonroot@sha256:189bd2ce1f7750193c2c10220d9201ba38c11e30fbb75b036606829fadbc81b1 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
