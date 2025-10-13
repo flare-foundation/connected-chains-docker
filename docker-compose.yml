@@ -37,7 +37,7 @@ services:
 
   rippled:
     container_name: rippled
-    image: flarefoundation/rippled:2.6.0
+    image: flarefoundation/rippled:2.6.1-dless
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -49,9 +49,9 @@ services:
       - ${BIND_IP}:51233:51233 # port_ws_public
       - ${BIND_IP}:50051:50051 # port_grpc
     volumes:
-      - ripple-data:/opt/ripple/.ripple/db
-      - ./config/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf
-      - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt
+      - ripple-data:/opt/ripple/.ripple/db:rw
+      - ./config/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf:ro
+      - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt:ro
 
   algorand:
     container_name: algorand
