@@ -1,1 +1,1 @@
-docker build -t flarefoundation/bitcoin:29.1 .
+docker build -t flarefoundation/bitcoin:30.0-dless .

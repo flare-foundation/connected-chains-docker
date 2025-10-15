@@ -1,7 +1,7 @@
 services:
   bitcoin:
     container_name: bitcoin
-    image: flarefoundation/bitcoin:29.1
+    image: flarefoundation/bitcoin:30.0-dless
     restart: on-failure:3
     environment:
       - TZ=Europe/London
