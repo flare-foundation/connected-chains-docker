@@ -34,7 +34,7 @@ ENV PATH="/opt/conan_env/bin:$PATH"
 RUN <<-EOF
     set -e
     git config --global http.postBuffer 1048576000
-    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles 
+    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
     mkdir cmake_build
 EOF
@@ -72,10 +72,37 @@ RUN <<-EOF
     mkdir -p /opt/ripple/.ripple/db
 EOF
 
-COPY rippled.conf validators.txt /opt/ripple/.ripple/
+WORKDIR /opt/validator-keys-tool
+
+RUN git clone --single-branch --branch "master" https://github.com/ripple/validator-keys-tool.git /opt/validator-keys-tool && \
+    git checkout 05742108d4b7c0b7d9a97c073acd690d2c75a2b4
+
+RUN <<-EOF
+    set -e
+    mkdir .build
+    cd .build
+    conan install \
+       .. \
+       --profile:host=default \
+       --profile:build=default \
+       --output-folder . \
+       --build missing \
+       --settings build_type=Release
+    cmake -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
+        -DCMAKE_TOOLCHAIN_FILE:FILEPATH=conan_toolchain.cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        ..
+EOF
+
+RUN <<-EOF
+    set -e
+    cd .build
+    cmake --build .
+EOF
 
 FROM debian:trixie@sha256:8f6a88feef3ed01a300dafb87f208977f39dccda1fd120e878129463f7fa3b8f
 COPY --from=build /opt/ripple/build /opt/ripple/
+COPY --from=build /opt/validator-keys-tool/.build/validator-keys /opt/ripple/bin/
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 ENV PATH="/opt/ripple/bin:${PATH}"
