@@ -124,5 +124,9 @@ EOF
 COPY ./rippled.conf /opt/ripple/.ripple/rippled.conf
 COPY ./validators.txt /opt/ripple/.ripple/validators.txt
 
+RUN mkdir -p /var/log/rippled && \
+    chmod 775 /var/log/rippled && \
+    chown root:65532 /var/log/rippled
+
 # https://xrpl.org/commandline-usage.html
 ENTRYPOINT ["rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
