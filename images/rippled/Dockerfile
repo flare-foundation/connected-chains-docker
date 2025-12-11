@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:bookworm@sha256:93492d1405a072c9d3b89110490e330e0b7eb37754cafc9520908b7fe6873f5f as build
+FROM debian:trixie@sha256:0d01188e8dd0ac63bf155900fad49279131a876a1ea7fac917c62e87ccb2732d as build
 
-ARG VERSION=2.6.1
+ARG VERSION=3.0.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -74,7 +74,7 @@ EOF
 
 COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
-FROM gcr.io/distroless/base-debian12:nonroot@sha256:c1201b805d3a35a4e870f9ce9775982dd166a2b0772232638dd2440fbe0e0134 as final
+FROM gcr.io/distroless/base-debian13:nonroot@sha256:c0d0c9c854a635e57be1d6635e066b076de3b217c7b971b213cea2e5641cc3a0 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
