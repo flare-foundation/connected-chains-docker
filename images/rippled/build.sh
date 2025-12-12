@@ -1,1 +1,1 @@
-docker build -t flarefoundation/rippled:2.6.1-dless .
+docker build -t flarefoundation/rippled:3.0.0-dless .

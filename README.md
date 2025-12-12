@@ -87,6 +87,8 @@ docker run \
   ghcr.io/flare-foundation/connected-chains-docker/distroless-debug:1.0.0
 ```
 
+For images based on Debian 13, use version `2.0.0`.
+
 Example commands:
 ```
 # attach to running bitcoin node's namespaces
