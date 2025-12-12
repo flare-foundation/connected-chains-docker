@@ -1,1 +1,1 @@
-docker build -t flarefoundation/distroless-debug:1.0.0 .
+docker build -t flarefoundation/distroless-debug:2.0.0 .
