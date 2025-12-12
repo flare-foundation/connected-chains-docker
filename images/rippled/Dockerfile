@@ -91,6 +91,7 @@ RUN <<-EOF
     cmake -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
         -DCMAKE_TOOLCHAIN_FILE:FILEPATH=conan_toolchain.cmake \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_EXE_LINKER_FLAGS="-static" \
         ..
 EOF
 
