@@ -1,0 +1,124 @@
+name: Release bitcoind image
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["*"]
+    paths: ["images/bitcoind/**"]
+  pull_request:
+    branches: ["main"]
+    paths: ["images/bitcoind/**"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/bitcoind
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+      digest: ${{ steps.build-and-push.outputs.digest }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+
+      - name: Get image tag (strip leading v only for tag)
+        id: get_image_tag
+        run: |
+          RAW_VERSION=$(grep "^ARG VERSION=" images/bitcoind/Dockerfile \
+            | cut -d'=' -f2 \
+            | tr -d '"' \
+            | tr -d "'" \
+            | tr -d '[:space:]')
+
+          VERSION_FOR_GIT=$RAW_VERSION
+          VERSION_FOR_TAG=${RAW_VERSION#v}
+
+          echo "VERSION_FOR_GIT=${VERSION_FOR_GIT}" >> $GITHUB_ENV
+          echo "VERSION_FOR_TAG=${VERSION_FOR_TAG}" >> $GITHUB_ENV
+
+          echo "image_tag=${VERSION_FOR_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad
+        with:
+          cosign-release: "v2.5.3"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.VERSION_FOR_TAG }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+          flavor: |
+            latest=false
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          context: images/bitcoind
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            VERSION=${{ env.VERSION_FOR_GIT }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign the published Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Verify ghcr image signatures
+        if: ${{ github.event_name != 'pull_request' }}
+        shell: bash
+        env:
+          COSIGN_EXPERIMENTAL: 1
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: |
+          echo "${TAGS}" | xargs -I {} cosign verify \
+          --certificate-identity=https://github.com/${{ github.repository }}/.github/workflows/release-bitcoind.yml@${{ github.ref }} \
+          --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+          "{}@${DIGEST}"
+
+  generate-provenance:
+    needs: [build]
+    if: github.event_name != 'pull_request'
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    with:
+      image: ghcr.io/${{ github.repository }}/bitcoind
+      digest: ${{ needs.build.outputs.digest }}
+      registry-username: ${{ github.actor }}
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
