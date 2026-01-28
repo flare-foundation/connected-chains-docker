@@ -1,7 +1,7 @@
 name: Release bitcoind image
 on:
   push:
-    branches: [main, "mr/optimization"]
+    branches: [main]
     tags: ["*"]
     paths: ["images/bitcoind/**"]
   pull_request:

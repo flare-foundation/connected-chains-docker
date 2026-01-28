@@ -1,7 +1,7 @@
 name: Release dogecoind image
 on:
   push:
-    branches: [main, "mr/optimization"]
+    branches: [main]
     tags: ["*"]
     paths: ["images/dogecoind/**"]
   pull_request:
