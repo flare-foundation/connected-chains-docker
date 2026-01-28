@@ -1,103 +1,19 @@
 name: Release dogecoind image
 on:
   push:
-    branches: ["main"]
+    branches: [main, "mr/optimization"]
     tags: ["*"]
     paths: ["images/dogecoind/**"]
   pull_request:
-    branches: ["main"]
+    branches: [main]
     paths: ["images/dogecoind/**"]
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/dogecoind
-permissions: read-all
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    outputs:
-      digest: ${{ steps.build-and-push.outputs.digest }}
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-      - name: Get image tag
-        id: get_image_tag
-        run: |
-          VERSION=$(grep "^ARG VERSION=" images/dogecoind/Dockerfile \
-            | cut -d'=' -f2 \
-            | tr -d '"' \
-            | tr -d "'" \
-            | tr -d [:space:])
-          echo $VERSION
-          echo "image_tag=${VERSION}" >> $GITHUB_OUTPUT
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad
-        with:
-          cosign-release: "v2.5.3"
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
-      - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}},value=${{ steps.get_image_tag.outputs.image_tag }},enable=${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') }}
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-            type=ref,event=tag,enable=${{ startsWith(github.ref, 'refs/tags/') }}
-          flavor: |
-            latest=false
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
-        with:
-          context: images/dogecoind
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-      - name: Verify ghcr image signatures
-        if: ${{ github.event_name != 'pull_request' }}
-        shell: bash
-        env:
-          COSIGN_EXPERIMENTAL: 1
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run: |
-          echo "${TAGS}" | xargs -I {} cosign verify \
-          --certificate-identity=https://github.com/${{ github.repository }}/.github/workflows/release-dogecoind.yml@${{ github.ref }} \
-          --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-          "{}@${DIGEST}"
-  generate-provenance:
-    needs: [build]
-    if: github.event_name != 'pull_request'
-    permissions:
-      actions: read
-      id-token: write
-      packages: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+  call:
+    uses: ./.github/workflows/release-image.yml
     with:
       image: ghcr.io/${{ github.repository }}/dogecoind
-      digest: ${{ needs.build.outputs.digest }}
-      registry-username: ${{ github.actor }}
+      context: images/dogecoind
+      dockerfile: Dockerfile
     secrets:
       registry-password: ${{ secrets.GITHUB_TOKEN }}
-
