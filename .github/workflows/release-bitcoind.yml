@@ -1,0 +1,19 @@
+name: Release bitcoind image
+on:
+  push:
+    branches: [main]
+    tags: ["*"]
+    paths: ["images/bitcoind/**"]
+  pull_request:
+    branches: [main]
+    paths: ["images/bitcoind/**"]
+
+jobs:
+  call:
+    uses: ./.github/workflows/release-image.yml
+    with:
+      image: ghcr.io/${{ github.repository }}/bitcoind
+      context: images/bitcoind
+      dockerfile: Dockerfile
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}

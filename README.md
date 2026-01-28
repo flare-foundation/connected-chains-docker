@@ -3,11 +3,12 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/flare-foundation/connected-chains-docker/badge)](https://scorecard.dev/viewer/?uri=github.com/flare-foundation/connected-chains-docker)
 
 > [!IMPORTANT]
-> Images have been updated to follow rootless and distroless best practices. For existing configurations, follow these instructions after updating: [Update volume permissions](#update-volume-permissions).**
+> Images have been updated to follow rootless and distroless best practices. For existing configurations, follow these instructions after updating: [Update volume permissions](#update-volume-permissions).\*\*
 
 A quickstart repo filled with Docker images which allows people to get up and running with the chains connected to the Flare Network.
 
 The following nodes are included:
+
 - [Bitcoin](https://github.com/bitcoin/bitcoin)
 - [Litecoin](https://github.com/litecoin-project/litecoin)
 - [Dogecoin](https://github.com/dogecoin/dogecoin)
@@ -27,16 +28,15 @@ The following specifications were observed to be able to run all nodes on a sing
 
 Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin, algorand and xrpl, more than a day for bitcoin.
 
-
 As of Q1 2024, this is roughly what you can expect from each node regarding disk usage:
 
-| Volume      | Size |
-| ----------- | ----------- |
-| algorand-data                    | 200GB |
-| bitcoin-data                     | 1000GB |
-| dogecoin-data                    | 350GB |
-| litecoin-data                    | 300GB |
-| ripple-data                      | 400GB |
+| Volume        | Size   |
+| ------------- | ------ |
+| algorand-data | 200GB  |
+| bitcoin-data  | 1000GB |
+| dogecoin-data | 350GB  |
+| litecoin-data | 300GB  |
+| ripple-data   | 400GB  |
 
 # Installation
 
@@ -50,7 +50,6 @@ cd /opt/connected-chains
 ./install.sh mainnet <your-provided-password>
 ```
 
-
 `<your-provided-password>` should be at least 64 characters long.
 
 To generate passwords for testnets, run with `testnet` as first parameter: `./install.sh testnet <your-provided-password>`
@@ -58,17 +57,20 @@ To generate passwords for testnets, run with `testnet` as first parameter: `./in
 # Running
 
 All containers:
+
 ```
 cd /opt/connected-chains
 docker compose up -d
 ```
 
 Single container:
+
 ```
 docker compose up -d bitcoin
 ```
 
 Stop a single container:
+
 ```
 docker compose stop bitcoin
 ```
@@ -80,6 +82,7 @@ You can check the bootstrap process with the `hc.sh` script. `./hc <your-provide
 Distroless images do not contain a shell to run commands for debugging. Sidecar debug containers, attached to the main container through shared namespaces, need to be used.
 
 Attaching a debug container:
+
 ```
 docker run \
   --rm -it --privileged \
@@ -90,6 +93,7 @@ docker run \
 For images based on Debian 13, use version `2.0.0`.
 
 Example commands:
+
 ```
 # attach to running bitcoin node's namespaces
 # and open an interactive terminal
@@ -112,7 +116,7 @@ Add tools by specifying them in `./images/debug/Dockerfile` or use your own debu
 
 ## Releasing debug image with Github Actions
 
-Commits to main with changes to `images/debug/**` context will automatically trigger a rebuild and push of image, with tag sourced from `ARG VERSION=<semver>` (suffixes and prefix 'v' allowed) in Dockerfile. 
+Commits to main with changes to `images/debug/**` context will automatically trigger a rebuild and push of image, with tag sourced from `ARG VERSION=<semver>` (suffixes and prefix 'v' allowed) in Dockerfile.
 
 For development purposes, you can also trigger the pipeline with a custom tag like so (the commit still needs to have made changes to `images/debug/**` context):
 
@@ -128,11 +132,14 @@ docker compose logs -f --tail=1000 bitcoin
 ```
 
 # Node configuration
+
 Each node has a configuration file provided in `/opt/connected-chains/<node>/<config-file-name>.conf`.
 Config files are volume-mounted to each container. After changing the config file you should restart the container.
 
 # Node data
+
 Data for each node is stored in a docker volume. To find the exact mount point on your filesystem, run
+
 ```
 docker volume ls
 sudo docker inspect <volume-name> | grep Mountpoint
@@ -141,17 +148,20 @@ sudo docker inspect <volume-name> | grep Mountpoint
 # Running testnets
 
 All containers:
+
 ```
 cd /opt/connected-chains
 docker compose -f docker-compose-testnet.yml up -d
 ```
 
 Single container:
+
 ```
 docker compose -f docker-compose-testnet.yml up -d bitcoin
 ```
 
 Stop a single container:
+
 ```
 docker compose -f docker-compose-testnet.yml stop bitcoin
 ```
@@ -161,6 +171,7 @@ You can check the bootstrap process with the `hc-testnet.sh` script. `./hc-testn
 Configs are loaded from `config-testnet` directory.
 
 # Security considerations
+
 Installation script will create a username and password for nodes and insert a line into each config file.
 You should save the usernames and passwords in your password manager for later use. You can always change them by editing the config files manually.
 
@@ -170,10 +181,31 @@ If you are running attestation clients on a different machine, consider locking 
 
 If you are running the clients in different networks you might also want to consider running TLS, either natively on each node that supports it or behind a reverse proxy.
 
-# Mounted storage 
+# Container image
+
+Public container images are hosted on Github Packages;
+
+ghcr.io/flare-foundation/connected-chains-docker/bitcoind
+ghcr.io/flare-foundation/connected-chains-docker/litecoind
+ghcr.io/flare-foundation/connected-chains-docker/dogecoind
+ghcr.io/flare-foundation/connected-chains-docker/rippled
+ghcr.io/flare-foundation/connected-chains-docker/algorand
+
+Images are signed using Cosign with the GitHub OIDC provider. To verify the image, run this command:
+
+```
+cosign verify \
+  --certificate-identity-regexp="^https://github\.com/flare-foundation/connected-chains-docker/\.github/workflows/release-.*\.yml@" \
+  --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+  ghcr.io/flare-foundation/connected-chains-docker/<IMAGE_NAME>:<TAG>
+```
+
+# Mounted storage
+
 If you mount additional storage and want it to be used by the chains, change docker data to your mounted directory:
 
 In `/etc/docker/daemon.json` add/change:
+
 ```
 {
   "data-root": "/data"
@@ -185,6 +217,7 @@ followed by `sudo systemctl restart docker`.
 Alternatively, if you do not wish to change data directory for your docker daemon you can switch to bind volume mounts or volume mounts with nfs driver in the compose file.
 
 # Algorand fast sync
+
 Algorand node supports syncing just the latest blocks in the blockchain, but it downloads full history by default. This can take up to 14 days.
 If you don't want to download the whole blockchain, you can run the script `algorand-catchup.sh` after the node has started bootstrapping.
 This will use Algorand fast catchup feature to automatically catchup to the latest catchpoint. After starting the catchup, the node should finish bootstrapping in few hours.
@@ -194,6 +227,7 @@ This will use Algorand fast catchup feature to automatically catchup to the late
 All Dockerfile definitions are in `images` folder. Images use Moby BuildKit extensions.
 
 Common build problems:
+
 - OOM kills compiler. Increase memory of your docker daemon (if using Docker desktop), increase Docker daemon swap and lower the parallel jobs flag (the `-j X` parameter).
 - if compiler is killed by OOM, image can continue building as if nothing bad happened. Makes sure to check the logs to confirm that build process succeeded. Otherwise container won't start due to missing binaries.
 - git clone hangs: try to increase the setting `git config --global http.postBuffer <max-bytes>`
@@ -205,12 +239,14 @@ If you're upgrading from older versions of this repository, you'll need to updat
 ## Volumes
 
 Find volume locations on host:
+
 ```
 docker volume ls
 docker inspect <volume-name> | grep Mountpoint
 ```
 
 For every volume, recursively change its ownership to `65532:65532`:
+
 ```
 sudo chown -R 65532:65532 <volume-mountpoint>
 ```
@@ -218,6 +254,7 @@ sudo chown -R 65532:65532 <volume-mountpoint>
 ## Bind mounts
 
 Recursively change ownership of directory on host to `65532:65532`:
+
 ```
 sudo chown -R 65532:65532 <host/mount/path>
 ```

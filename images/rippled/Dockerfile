@@ -34,7 +34,7 @@ ENV PATH="/opt/conan_env/bin:$PATH"
 RUN <<-EOF
     set -e
     git config --global http.postBuffer 1048576000
-    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles 
+    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
     mkdir cmake_build
 EOF
