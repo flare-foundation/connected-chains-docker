@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM debian:trixie@sha256:0d01188e8dd0ac63bf155900fad49279131a876a1ea7fac917c62e87ccb2732d as build
 
-ARG VERSION=3.0.0
+ARG VERSION=3.1.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 

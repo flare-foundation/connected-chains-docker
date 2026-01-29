@@ -1,0 +1,18 @@
+name: Release rippled image
+on:
+  push:
+    branches: [main]
+    paths: ["images/rippled/**"]
+  pull_request:
+    branches: [main]
+    paths: ["images/rippled/**"]
+
+jobs:
+  call:
+    uses: ./.github/workflows/release-image.yml
+    with:
+      image: ghcr.io/${{ github.repository }}/rippled
+      context: images/rippled
+      dockerfile: Dockerfile
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}

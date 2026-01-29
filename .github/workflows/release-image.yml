@@ -1,0 +1,141 @@
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      dockerfile:
+        required: false
+        type: string
+        default: Dockerfile
+    secrets:
+      registry-password:
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      digest: ${{ steps.build-and-push.outputs.digest }}
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get image tag (from Dockerfile ARG VERSION)
+        id: get_image_tag
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+           IMAGE_TAG=$(grep -m1 '^ARG VERSION=' "${{ inputs.context }}/${{ inputs.dockerfile }}" \
+            | cut -d'=' -f2 | tr -d '"' | tr -d "'" | tr -d '[:space:]')
+          else
+            IMAGE_TAG=$(echo ${{ github.sha }} | cut -c1-7)
+          fi
+          echo "Using image tag: $IMAGE_TAG"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad
+        with:
+          cosign-release: "v2.5.3"
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.registry-password }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ inputs.image }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push
+        id: build-and-push
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.context }}/${{ inputs.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign published image (keyless / certificate-based)
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: 1
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: |
+          echo "${TAGS}" | xargs -n1 -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Verify signatures
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: 1
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: |
+          echo "${TAGS}" | while read -r tag; do
+            cosign verify \
+              --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/release-image.yml@${{ github.ref }}" \
+              --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+              "${tag}@${DIGEST}"
+          done
+
+      # - name: Sign the published Docker image
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   env:
+      #     TAGS: ${{ steps.meta.outputs.tags }}
+      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      #   run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+      # - name: Verify ghcr image signatures
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   shell: bash
+      #   env:
+      #     COSIGN_EXPERIMENTAL: 1
+      #     TAGS: ${{ steps.meta.outputs.tags }}
+      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      #   run: |
+      #     echo "${TAGS}" | xargs -I {} cosign verify \
+      #     --certificate-identity=https://github.com/${{ github.repository }}/.github/workflows/release-dogecoind.yml@${{ github.ref }} \
+      #     --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+      #     "{}@${DIGEST}"
+  generate-provenance:
+    needs: [build]
+    if: ${{ github.event_name != 'pull_request' }}
+    permissions:
+      actions: read
+      id-token: write
+      packages: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    with:
+      image: ${{ inputs.image }}
+      digest: ${{ needs.build.outputs.digest }}
+      registry-username: ${{ github.actor }}
+    secrets:
+      registry-password: ${{ secrets.registry-password }}
