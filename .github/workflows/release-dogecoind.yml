@@ -1,0 +1,18 @@
+name: Release dogecoind image
+on:
+  push:
+    branches: [main]
+    paths: ["images/dogecoind/**"]
+  pull_request:
+    branches: [main]
+    paths: ["images/dogecoind/**"]
+
+jobs:
+  call:
+    uses: ./.github/workflows/release-image.yml
+    with:
+      image: ghcr.io/${{ github.repository }}/dogecoind
+      context: images/dogecoind
+      dockerfile: Dockerfile
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
