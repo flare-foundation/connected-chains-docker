@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:bookworm@sha256:93492d1405a072c9d3b89110490e330e0b7eb37754cafc9520908b7fe6873f5f as build
+FROM debian:bookworm@sha256:26f2a7cab45014541c65f9d140ccfa6aaefbb49686c6759bea9c6f7f5bb3d72f as build
 
 ARG VERSION=v30.0
 
