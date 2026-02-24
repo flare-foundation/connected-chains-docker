@@ -53,27 +53,8 @@ services:
       - ./config/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf:ro
       - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt:ro
 
-  algorand:
-    container_name: algorand
-    image: flarefoundation/algorand:4.2.1
-    restart: on-failure:3
-    ports:
-      - ${BIND_IP}:6332:8080
-      - ${BIND_IP}:4160:4160
-      - ${BIND_IP}:9100:9100
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
-    environment:
-      - TZ=Europe/London
-    volumes:
-      - algorand-data:/opt/algorand/.algorand
-      - ./config/algorand/config.json:/opt/algorand/.algorand/config.json
-      - ./config/algorand/algod.token:/opt/algorand/.algorand/algod.token
-
 volumes:
   bitcoin-data:
   litecoin-data:
   dogecoin-data:
   ripple-data:
-  algorand-data:
