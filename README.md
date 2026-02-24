@@ -12,7 +12,6 @@ The following nodes are included:
 - [Litecoin](https://github.com/litecoin-project/litecoin)
 - [Dogecoin](https://github.com/dogecoin/dogecoin)
 - [Rippled](https://github.com/ripple/rippled)
-- [Algorand](https://github.com/algorand/go-algorand)
 
 You can use this repo to get you started but we encourage the community to configure their own setups for increased technical diversity of the attestation provider ecosystem.
 
@@ -25,14 +24,13 @@ The following specifications were observed to be able to run all nodes on a sing
 - RAM: 96GB
 - Disk space: 3TB with an option or plan in place to expand capacity. SSD is recommended, some chains like xrpl can fall out of sync on regular disks. Xrpl also does not work on network attached cloud storage, a locally attached disk is required.
 
-Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin, dogecoin, algorand and xrpl, more than a day for bitcoin.
+Bootstrap time depends on your infrastructure and network, in our testing it is a few hours for litecoin and dogecoin, more than a day for bitcoin, minutes for xrpl.
 
 
 As of Q1 2024, this is roughly what you can expect from each node regarding disk usage:
 
 | Volume      | Size |
 | ----------- | ----------- |
-| algorand-data                    | 200GB |
 | bitcoin-data                     | 1000GB |
 | dogecoin-data                    | 350GB |
 | litecoin-data                    | 300GB |
@@ -183,11 +181,6 @@ In `/etc/docker/daemon.json` add/change:
 followed by `sudo systemctl restart docker`.
 
 Alternatively, if you do not wish to change data directory for your docker daemon you can switch to bind volume mounts or volume mounts with nfs driver in the compose file.
-
-# Algorand fast sync
-Algorand node supports syncing just the latest blocks in the blockchain, but it downloads full history by default. This can take up to 14 days.
-If you don't want to download the whole blockchain, you can run the script `algorand-catchup.sh` after the node has started bootstrapping.
-This will use Algorand fast catchup feature to automatically catchup to the latest catchpoint. After starting the catchup, the node should finish bootstrapping in few hours.
 
 # Building your own images
 

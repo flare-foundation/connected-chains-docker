@@ -47,10 +47,6 @@ cd ../dogecoin
 ./rpcuser.py admin $PASS
 
 cd ../ripple
-#./rpcauth.py admin $PASS
-
-cd ../algorand
-bash gen_auth_token.sh $PASS
 
 cd ../..
 
