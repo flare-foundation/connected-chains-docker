@@ -1,18 +1,18 @@
-name: Release bitcoind image
+name: Release Connected Chains Healthcheck
 on:
   push:
     branches: [main]
-    paths: ["images/bitcoind/**"]
+    paths: ["images/go_chains_hc/**"]
   pull_request:
     branches: [main]
-    paths: ["images/bitcoind/**"]
+    paths: ["images/go_chains_hc/**"]
 
 jobs:
   call:
     uses: ./.github/workflows/release-image.yml
     with:
-      image: ghcr.io/${{ github.repository }}/bitcoind
-      context: images/bitcoind
+      image: ghcr.io/${{ github.repository }}/go_chains_hc
+      context: images/go_chains_hc
       dockerfile: Dockerfile
     secrets:
       registry-password: ${{ secrets.GITHUB_TOKEN }}
