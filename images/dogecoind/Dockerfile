@@ -42,7 +42,7 @@ RUN <<-EOF
     mkdir -p /opt/dogecoin/.dogecoin/db
 EOF
 
-FROM gcr.io/distroless/cc-debian12:nonroot@sha256:d1b8e4c52be1111aa108e959ef2a822299bb70fd1819dd250871a2601ca1e4b6 as final
+FROM gcr.io/distroless/cc-debian13:nonroot@sha256:4cf9e68a5cbd8c9623480b41d5ed6052f028c44cc29f91b21590613ab8bec824 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 

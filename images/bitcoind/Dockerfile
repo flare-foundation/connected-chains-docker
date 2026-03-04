@@ -33,7 +33,7 @@ EOF
 
 RUN mkdir -p /opt/bitcoin/.bitcoin/db
 
-FROM gcr.io/distroless/cc-debian12:nonroot@sha256:189bd2ce1f7750193c2c10220d9201ba38c11e30fbb75b036606829fadbc81b1 as final
+FROM gcr.io/distroless/cc-debian13:nonroot@sha256:4cf9e68a5cbd8c9623480b41d5ed6052f028c44cc29f91b21590613ab8bec824 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
