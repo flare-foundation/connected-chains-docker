@@ -12,6 +12,7 @@ On each `/readyz` request, the sidecar runs a configurable set of checks against
 |---|---|---|
 | `blockdownload` | `getblockchaininfo` | Passes when `initialblockdownload` is `false`. Default for all chains. |
 | `txindex` | `getindexinfo` | Passes when `txindex.synced` is `true`. |
+| `connectioncount` | `getconnectioncount` | Passes when the node has at least `MIN_CONNECTIONS` peers. |
 
 ### Environment Variables
 
@@ -20,7 +21,9 @@ On each `/readyz` request, the sidecar runs a configurable set of checks against
 | `NODE_URL` | yes | — | RPC endpoint, e.g. `http://localhost:8332` |
 | `NODE_USER` | no | — | RPC auth username |
 | `NODE_PASS` | no | — | RPC auth password |
-| `CHECKS` | no | `blockdownload` | Comma-separated list of checks to run (blockdownload,txindex) |
+| `CHECKS` | no | `blockdownload` | Comma-separated list of checks to run (`blockdownload, txindex, connectioncount`) |
+| `MIN_CONNECTIONS` | no | `8` | Minimum peer connections required for the `connectioncount` check |
+
 
 ### Running Locally
 

@@ -12,9 +12,12 @@ import (
 
 type Check func(ctx context.Context, client *http.Client, cfg Config) error
 
+const jsonRPCVersion = "2.0"
+
 var registry = map[string]Check{
-	"blockdownload": checkBlockDownload,
-	"txindex":       checkTxIndex,
+	"blockdownload":   checkBlockDownload,
+	"txindex":         checkTxIndex,
+	"connectioncount": checkConnectionCount,
 }
 
 type rpcRequest struct {
@@ -26,7 +29,7 @@ type rpcRequest struct {
 
 func doRPC(ctx context.Context, client *http.Client, cfg Config, method string) (json.RawMessage, error) {
 	logger := slog.Default()
-	body, err := json.Marshal(rpcRequest{JSONRPC: "1.0", ID: "hc", Method: method, Params: []any{}})
+	body, err := json.Marshal(rpcRequest{JSONRPC: jsonRPCVersion, ID: "hc", Method: method, Params: []any{}})
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
@@ -46,7 +49,7 @@ func doRPC(ctx context.Context, client *http.Client, cfg Config, method string) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, fmt.Errorf("node returned HTTP %d", resp.StatusCode)
 	}
 
@@ -113,6 +116,23 @@ func checkTxIndex(ctx context.Context, client *http.Client, cfg Config) error {
 
 	if !info.TxIndex.Synced {
 		return fmt.Errorf("txindex is not synced")
+	}
+
+	return nil
+}
+
+func checkConnectionCount(ctx context.Context, client *http.Client, cfg Config) error {
+	result, err := doRPC(ctx, client, cfg, "getconnectioncount")
+	if err != nil {
+		return err
+	}
+
+	var count int
+	if err := json.Unmarshal(result, &count); err != nil {
+		return fmt.Errorf("parse getconnectioncount: %w", err)
+	}
+	if count < cfg.MinConnections {
+		return fmt.Errorf("not enough connections: %d < %d", count, cfg.MinConnections)
 	}
 
 	return nil

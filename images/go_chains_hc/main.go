@@ -6,17 +6,21 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type Config struct {
-	NodeURL  string
-	NodeUser string
-	NodePass string
-	Checks   []string
-	Addr     string
+	NodeURL        string
+	NodeUser       string
+	NodePass       string
+	Checks         []string
+	Addr           string
+	MinConnections int
 }
+
+const MIN_CONNECTIONS = 8
 
 func configFromEnv() (Config, error) {
 	nodeURL := os.Getenv("NODE_URL")
@@ -35,12 +39,24 @@ func configFromEnv() (Config, error) {
 		}
 	}
 
+	minConns := MIN_CONNECTIONS
+	if raw := os.Getenv("MIN_CONNECTIONS"); raw != "" {
+		n, err := strconv.Atoi(raw)
+
+		if err != nil || n < 0 {
+			return Config{}, fmt.Errorf("MIN_CONNECTIONS must be a non-negative integer")
+		}
+
+		minConns = n
+	}
+
 	return Config{
-		NodeURL:  nodeURL,
-		NodeUser: os.Getenv("NODE_USER"),
-		NodePass: os.Getenv("NODE_PASS"),
-		Checks:   checks,
-		Addr:     ":8080",
+		NodeURL:        nodeURL,
+		NodeUser:       os.Getenv("NODE_USER"),
+		NodePass:       os.Getenv("NODE_PASS"),
+		Checks:         checks,
+		Addr:           ":8080",
+		MinConnections: minConns,
 	}, nil
 }
 
