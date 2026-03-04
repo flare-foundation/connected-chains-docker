@@ -1,0 +1,35 @@
+name: Release Connected Chains Healthcheck
+on:
+  push:
+    branches: [main]
+    paths: ["images/go_chains_hc/**"]
+  pull_request:
+    branches: [main]
+    paths: ["images/go_chains_hc/**"]
+
+jobs:
+  call:
+    uses: ./.github/workflows/release-image.yml
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      deployments: read
+      discussions: read
+      issues: read
+      models: read
+      pages: read
+      pull-requests: read
+      repository-projects: read
+      statuses: read
+      security-events: read
+      artifact-metadata: read
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      image: ghcr.io/${{ github.repository }}/go_chains_hc
+      context: images/go_chains_hc
+      dockerfile: Dockerfile
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
