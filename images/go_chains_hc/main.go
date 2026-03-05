@@ -18,6 +18,7 @@ type Config struct {
 	Checks         []string
 	Addr           string
 	MinConnections int
+	Debug          bool
 }
 
 const MIN_CONNECTIONS = 8
@@ -57,6 +58,7 @@ func configFromEnv() (Config, error) {
 		Checks:         checks,
 		Addr:           ":8080",
 		MinConnections: minConns,
+		Debug:          os.Getenv("DEBUG") == "true",
 	}, nil
 }
 

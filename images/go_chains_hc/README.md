@@ -23,6 +23,7 @@ On each `/readyz` request, the sidecar runs a configurable set of checks against
 | `NODE_PASS` | no | — | RPC auth password |
 | `CHECKS` | no | `blockdownload` | Comma-separated list of checks to run (`blockdownload, txindex, connectioncount`) |
 | `MIN_CONNECTIONS` | no | `8` | Minimum peer connections required for the `connectioncount` check |
+| `DEBUG` | no | `false` | Enable debug logs |
 
 
 ### Running Locally
