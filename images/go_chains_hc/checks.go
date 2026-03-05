@@ -59,7 +59,9 @@ func doRPC(ctx context.Context, client *http.Client, cfg Config, method string) 
 		return nil, fmt.Errorf("read response: %w", err)
 	}
 
-	logger.Debug("rpc response", "method", method, "body", string(data))
+	if cfg.Debug {
+		logger.Debug("rpc response", "method", method, "body", string(data))
+	}
 
 	var envelope struct {
 		Result json.RawMessage `json:"result"`
