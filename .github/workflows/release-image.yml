@@ -29,7 +29,7 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Get image tag (from Dockerfile ARG VERSION)
         id: get_image_tag
