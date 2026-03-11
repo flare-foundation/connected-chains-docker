@@ -15,9 +15,15 @@ type Check func(ctx context.Context, client *http.Client, cfg Config) error
 const jsonRPCVersion = "2.0"
 
 var registry = map[string]Check{
+	// BTC/Dogecoin
 	"blockdownload":   checkBlockDownload,
 	"txindex":         checkTxIndex,
 	"connectioncount": checkConnectionCount,
+
+	// Ripple
+	"serverstate":  checkServerState,
+	"peercount":    checkPeerCount,
+	"serverstatus": checkServerStatus,
 }
 
 type rpcRequest struct {
@@ -135,6 +141,72 @@ func checkConnectionCount(ctx context.Context, client *http.Client, cfg Config) 
 	}
 	if count < cfg.MinConnections {
 		return fmt.Errorf("not enough connections: %d < %d", count, cfg.MinConnections)
+	}
+
+	return nil
+}
+
+func checkServerStatus(ctx context.Context, client *http.Client, cfg Config) error {
+	result, err := doRPC(ctx, client, cfg, "ping")
+	if err != nil {
+		return err
+	}
+
+	var info struct {
+		Status string `json:"status"`
+	}
+	if err := json.Unmarshal(result, &info); err != nil {
+		return fmt.Errorf("parse ping response: %w", err)
+	}
+	if info.Status != "success" {
+		return fmt.Errorf("unexpected status: %q", info.Status)
+	}
+
+	return nil
+}
+
+func checkServerState(ctx context.Context, client *http.Client, cfg Config) error {
+	result, err := doRPC(ctx, client, cfg, "server_info")
+	if err != nil {
+		return err
+	}
+
+	var info struct {
+		State struct {
+			ServerState string `json:"server_state"`
+		} `json:"info"`
+	}
+
+	if err := json.Unmarshal(result, &info); err != nil {
+		return fmt.Errorf("parse server_state response: %w", err)
+	}
+
+	switch info.State.ServerState {
+	case "full", "validating":
+		return nil
+	default:
+		return fmt.Errorf("unexpected server_state: %q", info.State.ServerState)
+	}
+}
+
+func checkPeerCount(ctx context.Context, client *http.Client, cfg Config) error {
+	result, err := doRPC(ctx, client, cfg, "server_info")
+	if err != nil {
+		return err
+	}
+
+	var info struct {
+		State struct {
+			Peers int `json:"peers"`
+		} `json:"info"`
+	}
+
+	if err := json.Unmarshal(result, &info); err != nil {
+		return fmt.Errorf("parse server_state response: %w", err)
+	}
+
+	if info.State.Peers < cfg.MinConnections {
+		return fmt.Errorf("not enough peers: %d < %d", info.State.Peers, cfg.MinConnections)
 	}
 
 	return nil

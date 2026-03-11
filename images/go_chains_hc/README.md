@@ -1,6 +1,6 @@
 ## Connected Chains Healthcheck
 
-A minimal Go binary/container that exposes a `/readyz` HTTP endpoint for blockchain node readiness probes. Designed to be used alongside any compatible node (Bitcoin, Dogecoin, Litecoin, etc.) in a Kubernetes pod.
+A minimal Go binary/container that exposes a `/readyz` HTTP endpoint for blockchain node readiness probes. Designed to be used alongside any compatible node in a Kubernetes pod or as standalone Docker service.
 
 ### How it works
 
@@ -8,11 +8,21 @@ On each `/readyz` request, the sidecar runs a configurable set of checks against
 
 ### Checks
 
+#### Bitcoin / Dogecoin
+
 | Check | RPC Method | Description |
 |---|---|---|
-| `blockdownload` | `getblockchaininfo` | Passes when `initialblockdownload` is `false`. Default for all chains. |
+| `blockdownload` | `getblockchaininfo` | Passes when `initialblockdownload` is `false` |
 | `txindex` | `getindexinfo` | Passes when `txindex.synced` is `true`. |
 | `connectioncount` | `getconnectioncount` | Passes when the node has at least `MIN_CONNECTIONS` peers. |
+
+#### XRPL
+
+| Check | RPC Method | Description |
+|---|---|---|
+| `serverstatus` | `ping` | Passes when `status` is `success` |
+| `serverstate` | `server_state` | Passes when `server_state` is `full` or `validating`. |
+| `peercount` | `server_info` | Passes when the node has at least `MIN_CONNECTIONS` peers. |
 
 ### Environment Variables
 
@@ -21,7 +31,7 @@ On each `/readyz` request, the sidecar runs a configurable set of checks against
 | `NODE_URL` | yes | — | RPC endpoint, e.g. `http://localhost:8332` |
 | `NODE_USER` | no | — | RPC auth username |
 | `NODE_PASS` | no | — | RPC auth password |
-| `CHECKS` | no | `blockdownload` | Comma-separated list of checks to run (`blockdownload, txindex, connectioncount`) |
+| `CHECKS` | yes | - | Comma-separated list of checks to run (Check above section) |
 | `MIN_CONNECTIONS` | no | `8` | Minimum peer connections required for the `connectioncount` check |
 | `DEBUG` | no | `false` | Enable debug logs |
 
