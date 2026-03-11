@@ -29,9 +29,9 @@ func configFromEnv() (Config, error) {
 		return Config{}, fmt.Errorf("NODE_URL is required")
 	}
 
-	checks := []string{"blockdownload"}
-	if raw := os.Getenv("CHECKS"); raw != "" {
-		checks = strings.Split(raw, ",")
+	checks := strings.Split(os.Getenv("CHECKS"), ",")
+	if len(checks) == 0 || checks[0] == "" {
+		return Config{}, fmt.Errorf("CHECKS is required")
 	}
 
 	for _, name := range checks {
