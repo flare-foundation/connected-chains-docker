@@ -21,7 +21,8 @@ On each `/readyz` request, the sidecar runs a configurable set of checks against
 | Check | RPC Method | Description |
 |---|---|---|
 | `serverstatus` | `ping` | Passes when `status` is `success` |
-| `serverstate` | `server_state` | Passes when `server_state` is `full` or `validating`. |
+| `rpcsynced` | `server_info` | Passes when `server_state` is `full` (Used for RPC and Proxy nodes). |
+| `validatorsynced` | `server_info` | Passes when `server_state` is `proposing` (Used for Validator nodes). |
 | `peercount` | `server_info` | Passes when the node has at least `MIN_CONNECTIONS` peers. |
 
 ### Environment Variables

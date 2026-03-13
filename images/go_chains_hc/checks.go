@@ -21,9 +21,10 @@ var registry = map[string]Check{
 	"connectioncount": checkConnectionCount,
 
 	// Ripple
-	"serverstate":  checkServerState,
-	"peercount":    checkPeerCount,
-	"serverstatus": checkServerStatus,
+	"rpcsynced":       checkRpcServerState,
+	"validatorsynced": checkValidatorServerState,
+	"peercount":       checkPeerCount,
+	"serverstatus":    checkServerStatus,
 }
 
 type rpcRequest struct {
@@ -165,7 +166,7 @@ func checkServerStatus(ctx context.Context, client *http.Client, cfg Config) err
 	return nil
 }
 
-func checkServerState(ctx context.Context, client *http.Client, cfg Config) error {
+func checkRpcServerState(ctx context.Context, client *http.Client, cfg Config) error {
 	result, err := doRPC(ctx, client, cfg, "server_info")
 	if err != nil {
 		return err
@@ -181,12 +182,34 @@ func checkServerState(ctx context.Context, client *http.Client, cfg Config) erro
 		return fmt.Errorf("parse server_state response: %w", err)
 	}
 
-	switch info.State.ServerState {
-	case "full", "validating":
-		return nil
-	default:
+	if info.State.ServerState != "full" {
 		return fmt.Errorf("unexpected server_state: %q", info.State.ServerState)
 	}
+
+	return nil
+}
+
+func checkValidatorServerState(ctx context.Context, client *http.Client, cfg Config) error {
+	result, err := doRPC(ctx, client, cfg, "server_info")
+	if err != nil {
+		return err
+	}
+
+	var info struct {
+		State struct {
+			ServerState string `json:"server_state"`
+		} `json:"info"`
+	}
+
+	if err := json.Unmarshal(result, &info); err != nil {
+		return fmt.Errorf("parse server_state response: %w", err)
+	}
+
+	if info.State.ServerState != "proposing" {
+		return fmt.Errorf("unexpected server_state: %q", info.State.ServerState)
+	}
+
+	return nil
 }
 
 func checkPeerCount(ctx context.Context, client *http.Client, cfg Config) error {
