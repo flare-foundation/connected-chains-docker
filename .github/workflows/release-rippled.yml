@@ -27,6 +27,7 @@ jobs:
       statuses: read
       security-events: read
       artifact-metadata: read
+      vulnerability-alerts: read
       packages: write
       id-token: write
       attestations: write
