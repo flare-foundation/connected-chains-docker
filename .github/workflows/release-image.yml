@@ -15,7 +15,11 @@ on:
       registry-password:
         required: true
 
-permissions: read-all
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  actions: read
 
 jobs:
   build:
