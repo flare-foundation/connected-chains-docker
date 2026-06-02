@@ -103,7 +103,7 @@ EOF
 
 COPY rippled.conf validators.txt /opt/ripple/.ripple/
 
-FROM gcr.io/distroless/base-debian13:nonroot@sha256:e2f22688c7f48cf0657f7c0929b52174c80b73ea24ea898df7517c26621659bb as final
+FROM gcr.io/distroless/base-debian13:nonroot@sha256:e00da4d3bd422820880b080115b3bad24349bef37ed46d68ed0d13e150dc8d67 as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
