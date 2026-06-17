@@ -1,7 +1,7 @@
 #
 # Default validators.txt
 #
-# This file is located in the same folder as your rippled.cfg file
+# This file is located in the same folder as your xrpld.cfg file
 # and defines which validators your server trusts not to collude.
 #
 # This file is UTF-8 with DOS, UNIX, or Mac style line endings.
@@ -26,10 +26,9 @@
 #
 #   Examples:
 #    https://vl.ripple.com
-#    https://vl.coil.com
-#    https://vl.xrplf.org
+#    https://unl.xrplf.org
 #    http://127.0.0.1:8000
-#    file:///etc/opt/ripple/vl.txt
+#    file:///etc/xrpld/vl.txt
 #
 # [validator_list_keys]
 #
@@ -44,11 +43,11 @@
 #    ED307A760EE34F2D0CAA103377B1969117C38B8AA0AA1E2A24DAC1F32FC97087ED
 #
 
-# The default validator list publishers that the rippled instance
+# The default validator list publishers that the xrpld instance
 # trusts.
 #
-# WARNING: Changing these values can cause your rippled instance to see a
-#          validated ledger that contradicts other rippled instances'
+# WARNING: Changing these values can cause your xrpld instance to see a
+#          validated ledger that contradicts other xrpld instances'
 #          validated ledgers (aka a ledger fork) if your validator list(s)
 #          do not sufficiently overlap with the list(s) used by others.
 #          See: https://arxiv.org/pdf/1802.07242.pdf
@@ -71,3 +70,21 @@ ED42AEC58B701EEBB77356FFFEC26F83C1F0407263530F068C7C73D392C7E06FD1
 #
 # [validator_list_keys]
 # ED264807102805220DA0F312E71FC2C69E1552C9C5790F6C25E3729DEB573D5860
+
+
+# [validator_list_threshold]
+#
+#   Minimum number of validator lists on which a validator must be listed in
+#   order to be used.
+#
+#   This can be set explicitly to any positive integer number not greater than
+#   the size of [validator_list_keys]. If it is not set, or set to 0, the
+#   value will be calculated at startup from the size of [validator_list_keys],
+#   where the calculation is:
+#
+#     threshold = size(validator_list_keys) < 3
+#       ? 1
+#       : floor(size(validator_list_keys) / 2) + 1
+
+[validator_list_threshold]
+0

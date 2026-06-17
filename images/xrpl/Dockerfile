@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM debian:trixie@sha256:2c91e484d93f0830a7e05a2b9d92a7b102be7cab562198b984a84fdbc7806d91 as build
 
-ARG VERSION=3.1.3
+ARG VERSION=3.2.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
@@ -24,9 +24,9 @@ RUN <<-EOF
     /opt/conan_env/bin/python -m pip install -r /tmp/requirements.txt --require-hashes
 EOF
 
-RUN git clone --single-branch --branch "${VERSION}" https://github.com/ripple/rippled.git /opt/ripple
+RUN git clone --single-branch --branch "${VERSION}" https://github.com/ripple/rippled.git /opt/xrpld
 
-WORKDIR /opt/ripple
+WORKDIR /opt/xrpld
 
 ENV PATH="/opt/conan_env/bin:$PATH"
 
@@ -34,7 +34,7 @@ ENV PATH="/opt/conan_env/bin:$PATH"
 RUN <<-EOF
     set -e
     git config --global http.postBuffer 1048576000
-    conan config install /opt/ripple/conan/profiles/default -tf $(conan config home)/profiles 
+    conan config install /opt/xrpld/conan/profiles/default -tf $(conan config home)/profiles
     conan remote add --index 0 xrplf "https://conan.ripplex.io"
     mkdir cmake_build
 EOF
@@ -57,7 +57,7 @@ RUN <<-EOF
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake \
-        -DCMAKE_INSTALL_PREFIX=/opt/ripple/build \
+        -DCMAKE_INSTALL_PREFIX=/opt/xrpld/build \
         -Dstatic=ON \
         -Dxrpld=ON \
         -Dtests=OFF \
@@ -68,8 +68,8 @@ RUN <<-EOF
     set -e
     cd cmake_build
     cmake --build . --target install -- -j 8
-    find /opt/ripple/build/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
-    mkdir -p /opt/ripple/.ripple/db
+    find /opt/xrpld/build/bin -type f -executable -exec strip -s {} + 2>/dev/null || true
+    mkdir -p /opt/xrpld/.xrpld/db
 EOF
 
 WORKDIR /opt/validator-keys-tool
@@ -101,15 +101,15 @@ RUN <<-EOF
     cmake --build .
 EOF
 
-COPY rippled.conf validators.txt /opt/ripple/.ripple/
+COPY xrpld.cfg validators.txt /opt/xrpld/.xrpld/
 
 FROM gcr.io/distroless/base-debian13:nonroot@sha256:e2f22688c7f48cf0657f7c0929b52174c80b73ea24ea898df7517c26621659bb as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
-COPY --from=build --chown=65532:65532 /opt/ripple/build/bin/ /opt/ripple/bin/
-COPY --from=build --chown=65532:65532 /opt/ripple/.ripple/ /opt/ripple/.ripple/
-COPY --from=build /opt/validator-keys-tool/.build/validator-keys /opt/ripple/bin/
+COPY --from=build --chown=65532:65532 /opt/xrpld/build/bin/ /opt/xrpld/bin/
+COPY --from=build --chown=65532:65532 /opt/xrpld/.xrpld/ /opt/xrpld/.xrpld/
+COPY --from=build /opt/validator-keys-tool/.build/validator-keys /opt/xrpld/bin/
 
 # https://xrpl.org/commandline-usage.html
-ENTRYPOINT ["/opt/ripple/bin/rippled", "--conf=/opt/ripple/.ripple/rippled.conf", "--fg"]
+ENTRYPOINT ["/opt/xrpld/bin/xrpld", "--conf=/opt/xrpld/.xrpld/xrpld.cfg", "--fg"]

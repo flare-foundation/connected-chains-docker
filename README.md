@@ -11,7 +11,7 @@ The following nodes are included:
 - [Bitcoin](https://github.com/bitcoin/bitcoin)
 - [Litecoin](https://github.com/litecoin-project/litecoin)
 - [Dogecoin](https://github.com/dogecoin/dogecoin)
-- [Rippled](https://github.com/ripple/rippled)
+- [XRPL](https://github.com/ripple/rippled)
 
 You can use this repo to get you started but we encourage the community to configure their own setups for increased technical diversity of the attestation provider ecosystem.
 
@@ -29,12 +29,12 @@ Bootstrap time depends on your infrastructure and network, in our testing it is 
 
 As of Q1 2024, this is roughly what you can expect from each node regarding disk usage:
 
-| Volume      | Size |
-| ----------- | ----------- |
-| bitcoin-data                     | 1000GB |
-| dogecoin-data                    | 350GB |
-| litecoin-data                    | 300GB |
-| ripple-data                      | 400GB |
+| Volume        | Size |
+|---------------| ----------- |
+| bitcoin-data  | 1000GB |
+| dogecoin-data | 350GB |
+| litecoin-data | 300GB |
+| xrpld-data    | 400GB |
 
 # Installation
 

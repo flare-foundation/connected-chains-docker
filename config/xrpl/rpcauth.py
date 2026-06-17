@@ -25,7 +25,7 @@ def password_to_hmac(salt, password):
 
 def main():
 
-    confPath = os.path.join(os.path.dirname(__file__), './rippled.conf')
+    confPath = os.path.join(os.path.dirname(__file__), './xrpld.cfg')
 
     confRead = open(confPath, 'r')
 
@@ -33,7 +33,7 @@ def main():
     for line in lines:
         if line.startswith("password"):
             confRead.close() 
-            print('password already defined in rippled.conf, terminating early')
+            print('password already defined in rxrpld.cfg, terminating early')
             quit()
 
     confRead.close()                    
@@ -48,7 +48,7 @@ def main():
     elif args.password == '-':
         args.password = getpass()
 
-    print('String to be appended to rippled.conf:')
+    print('String to be appended to xrpld.cfg:')
     print('user = {0}'.format(args.username))
     print('password = {0}'.format(args.password))
     print('Your password:\n{0}'.format(args.password))
