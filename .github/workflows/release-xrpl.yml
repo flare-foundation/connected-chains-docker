@@ -1,11 +1,11 @@
-name: Release rippled image
+name: Release xrpl image
 on:
   push:
     branches: [main]
-    paths: ["images/rippled/**"]
+    paths: ["images/xrpl/**"]
   pull_request:
     branches: [main]
-    paths: ["images/rippled/**"]
+    paths: ["images/xrpl/**"]
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -32,8 +32,8 @@ jobs:
       id-token: write
       attestations: write
     with:
-      image: ghcr.io/${{ github.repository }}/rippled
-      context: images/rippled
+      image: ghcr.io/${{ github.repository }}/xrpl
+      context: images/xrpl
       dockerfile: Dockerfile
     secrets:
       registry-password: ${{ secrets.GITHUB_TOKEN }}

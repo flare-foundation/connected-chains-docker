@@ -35,9 +35,9 @@ services:
       - dogecoin-data:/opt/dogecoin/.dogecoin/db
       - ./config/dogecoin/dogecoin.conf:/opt/dogecoin/.dogecoin/dogecoin.conf
 
-  rippled:
-    container_name: rippled
-    image: flarefoundation/rippled:2.6.1-dless
+  xrpl:
+    container_name: xrpl
+    image: flarefoundation/xrpl:3.2.0-dless
     restart: on-failure:3
     environment:
       - TZ=Europe/London
@@ -49,12 +49,12 @@ services:
       - ${BIND_IP}:51233:51233 # port_ws_public
       - ${BIND_IP}:50051:50051 # port_grpc
     volumes:
-      - ripple-data:/opt/ripple/.ripple/db:rw
-      - ./config/ripple/rippled.conf:/opt/ripple/.ripple/rippled.conf:ro
-      - ./config/ripple/validators.txt:/opt/ripple/.ripple/validators.txt:ro
+      - xrpl-data:/opt/xrpld/.xrpld/db:rw
+      - ./config/xrpl/xrpld.cfg:/opt/xrpld/.xrpld/xrpld.cfg:ro
+      - ./config/xrpl/validators.txt:/opt/xrpld/.xrpld/validators.txt:ro
 
 volumes:
   bitcoin-data:
   litecoin-data:
   dogecoin-data:
-  ripple-data:
+  xrpl-data:
