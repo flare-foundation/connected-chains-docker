@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:trixie@sha256:2c91e484d93f0830a7e05a2b9d92a7b102be7cab562198b984a84fdbc7806d91 as build
+FROM debian:trixie@sha256:fe7312b5f05bf5f43fad76bcd8945642e4e47a68aefd1b73f447615899d0fac1 as build
 
 ARG VERSION=3.2.0
 
@@ -103,7 +103,7 @@ EOF
 
 COPY xrpld.cfg validators.txt /opt/xrpld/.xrpld/
 
-FROM gcr.io/distroless/base-debian13:nonroot@sha256:e2f22688c7f48cf0657f7c0929b52174c80b73ea24ea898df7517c26621659bb as final
+FROM gcr.io/distroless/base-debian13:nonroot@sha256:ab7554b6d07ad354fad31957f8a1a813e65dfb93a8ad160568c79c3f2be6884f as final
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
