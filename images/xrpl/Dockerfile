@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.3-labs
-FROM debian:trixie@sha256:fe7312b5f05bf5f43fad76bcd8945642e4e47a68aefd1b73f447615899d0fac1 as build
+FROM gcc:15-trixie@sha256:486d5379b2d679f18bca957901d628952aa0ebc2d82817047bbef1dbfbc13d70 as build
 
 ARG VERSION=3.3.0
 
@@ -15,6 +15,8 @@ RUN <<-EOF
         cmake
 EOF
 
+ENV PATH="/opt/conan_env/bin:$PATH"
+
 RUN <<-EOF
     set -e
     echo "conan" > /tmp/requirements.in
@@ -27,8 +29,6 @@ EOF
 RUN git clone --single-branch --branch "${VERSION}" https://github.com/ripple/rippled.git /opt/xrpld
 
 WORKDIR /opt/xrpld
-
-ENV PATH="/opt/conan_env/bin:$PATH"
 
 # https://github.com/XRPLF/rippled/blob/develop/BUILD.md
 RUN <<-EOF
