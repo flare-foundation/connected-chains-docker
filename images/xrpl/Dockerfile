@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 FROM gcc:15-trixie@sha256:486d5379b2d679f18bca957901d628952aa0ebc2d82817047bbef1dbfbc13d70 as build
 
-ARG VERSION=3.3.0
+ARG VERSION=3.4.0
 
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/London"
 
