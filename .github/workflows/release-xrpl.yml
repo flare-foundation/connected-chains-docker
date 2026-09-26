@@ -11,7 +11,7 @@ on:
 permissions: read-all
 
 jobs:
-  call:
+  source:
     uses: ./.github/workflows/release-image.yml
     permissions:
       actions: read
@@ -35,5 +35,31 @@ jobs:
       image: ghcr.io/${{ github.repository }}/xrpl
       context: images/xrpl
       dockerfile: Dockerfile
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
+  deb:
+    uses: ./.github/workflows/release-image.yml
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      deployments: read
+      discussions: read
+      issues: read
+      models: read
+      pages: read
+      pull-requests: read
+      repository-projects: read
+      statuses: read
+      security-events: read
+      artifact-metadata: read
+      vulnerability-alerts: read
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      image: ghcr.io/${{ github.repository }}/xrpl-deb
+      context: images/xrpl
+      dockerfile: Dockerfile-deb
     secrets:
       registry-password: ${{ secrets.GITHUB_TOKEN }}
