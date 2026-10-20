@@ -12,7 +12,7 @@ permissions: read-all
 
 jobs:
   source:
-    uses: ./.github/workflows/release-image.yml
+    uses: ./.github/workflows/release-image.yml # zizmor: ignore[self-repository] actionlint does not support $/ syntax
     permissions:
       actions: read
       checks: read
@@ -27,7 +27,6 @@ jobs:
       statuses: read
       security-events: read
       artifact-metadata: read
-      vulnerability-alerts: read
       packages: write
       id-token: write
       attestations: write
@@ -38,7 +37,7 @@ jobs:
     secrets:
       registry-password: ${{ secrets.GITHUB_TOKEN }}
   deb:
-    uses: ./.github/workflows/release-image.yml
+    uses: ./.github/workflows/release-image.yml # zizmor: ignore[self-repository] actionlint does not support $/ syntax
     permissions:
       actions: read
       checks: read
@@ -53,7 +52,6 @@ jobs:
       statuses: read
       security-events: read
       artifact-metadata: read
-      vulnerability-alerts: read
       packages: write
       id-token: write
       attestations: write

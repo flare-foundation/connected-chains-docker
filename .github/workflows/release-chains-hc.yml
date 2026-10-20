@@ -9,7 +9,7 @@ on:
 
 jobs:
   call:
-    uses: ./.github/workflows/release-image.yml
+    uses: ./.github/workflows/release-image.yml # zizmor: ignore[self-repository] actionlint does not support $/ syntax
     permissions:
       actions: read
       checks: read
