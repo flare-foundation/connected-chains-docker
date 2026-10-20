@@ -9,12 +9,18 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"  # Monday by default
+    cooldown:
+      default-days: 7
   - package-ecosystem: "docker"
     directories: 
       - "images/*"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
